@@ -1,24 +1,45 @@
-import cssText from "data-text:~style.css"
+import cssText from "data-text:~/style.css"
 import type { PlasmoCSConfig } from "plasmo"
-
-import { CountButton } from "~features/count-button"
+import SelectorRecorder from "~/selector-recorder";
+import {
+    RecoilRoot,
+    useRecoilValue,
+    useSetRecoilState,
+} from 'recoil';
+import { selectorListAtom } from "~/store";
+import { useEffect } from "react";
 
 export const config: PlasmoCSConfig = {
-  matches: ["https://www.plasmo.com/*"]
+    matches: ["https://ads.tiktok.com/*"]
 }
 
 export const getStyle = () => {
-  const style = document.createElement("style")
-  style.textContent = cssText
-  return style
+    const style = document.createElement("style")
+    style.textContent = cssText
+    return style
+}
+const RecorderOverlay = () => {
+    const selectorList = useRecoilValue(selectorListAtom);
+    const setSelectorListAtom = useSetRecoilState(selectorListAtom);
+    useEffect(() => {
+        const recorder = new SelectorRecorder(setSelectorListAtom);
+        return () => {
+            recorder.destroy();
+        };
+    }, []);
+    return (
+        <RecoilRoot>
+            <div className="recorder-z-50 recorder-flex recorder-fixed recorder-top-32 recorder-right-8">
+                {
+                    selectorList.map((item) => {
+                        return <div>
+                            selector: {item.selector}
+                        </div>
+                    })
+                }
+            </div>
+        </RecoilRoot>
+    )
 }
 
-const PlasmoOverlay = () => {
-  return (
-    <div className="plasmo-z-50 plasmo-flex plasmo-fixed plasmo-top-32 plasmo-right-8">
-      <CountButton />
-    </div>
-  )
-}
-
-export default PlasmoOverlay
+export default RecorderOverlay
