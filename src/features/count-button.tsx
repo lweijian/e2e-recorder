@@ -12,7 +12,7 @@ export const CountButton = () => {
       active:recorder-scale-105 recorder-bg-slate-50 hover:recorder-bg-slate-100 recorder-text-slate-800 hover:recorder-text-slate-900">
       Count:
       <span className="recorder-inline-flex recorder-items-center recorder-justify-center recorder-w-8 recorder-h-4 recorder-ml-2 recorder-text-xs recorder-font-semibold recorder-rounded-full">
-        {count+1}
+        {count + 1}
       </span>
     </button>
   )
