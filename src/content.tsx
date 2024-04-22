@@ -6,8 +6,11 @@ import Draggable from "react-draggable" // The default
 
 import "@arco-design/web-react/dist/css/arco.css"
 
+import { useStorage } from "@plasmohq/storage/hook"
+
 import SelectorRecorder from "~/selector-recorder"
 
+import { SHOW_CONTENT_UI } from "./hooks/storageKeys"
 import useStoragePosition from "./hooks/useStoragePosition"
 
 export const config: PlasmoCSConfig = {
@@ -27,6 +30,7 @@ export const getStyle = () => {
 const RecorderOverlay = () => {
   const [recorderList, setRecorderList] = useState([])
   const recorder = useMemo(() => new SelectorRecorder(setRecorderList), [])
+  const [show] = useStorage(SHOW_CONTENT_UI)
   useEffect(() => {
     return () => {
       recorder.destroy()
@@ -35,7 +39,7 @@ const RecorderOverlay = () => {
 
   const { position, onDrag } = useStoragePosition()
   const [disabled, setDisabled] = useState(true)
-  return (
+  return show ? (
     <Draggable
       onDrag={onDrag}
       disabled={disabled}
@@ -60,6 +64,8 @@ const RecorderOverlay = () => {
         </div>
       </div>
     </Draggable>
+  ) : (
+    <></>
   )
 }
 
