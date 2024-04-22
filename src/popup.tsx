@@ -5,6 +5,7 @@ import { useStorage } from "@plasmohq/storage/hook"
 import { CountButton } from "~/features/count-button"
 
 import "~/style.css"
+import "@arco-design/web-react/dist/css/arco.css"
 
 import { SHOW_CONTENT_UI } from "./hooks/storageKeys"
 
