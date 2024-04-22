@@ -11,6 +11,7 @@
     "prettier": "prettier --write ./**/*.{ts,tsx,css,js,mjs}"
   },
   "dependencies": {
+    "@arco-design/web-react": "^2.61.3",
     "@plasmohq/storage": "^1.10.0",
     "lodash-es": "^4.17.21",
     "plasmo": "0.85.2",
