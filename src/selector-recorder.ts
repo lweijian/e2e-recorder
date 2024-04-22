@@ -1,3 +1,5 @@
+import { debounce } from "lodash-es"
+
 export interface TargetNode {
   selector: string
   content: string
@@ -53,16 +55,19 @@ export class SelectorRecorder {
   }
 
   private _bindTestIdClickEvents() {
-    document.querySelectorAll("[data-testid]").forEach((element: Element) => {
-      const htmlElement = element as HTMLElement
-      if (!htmlElement.dataset.isClickedEventBound) {
-        htmlElement.addEventListener(
-          "click",
-          this._buildClickHandler(htmlElement)
-        )
-        htmlElement.dataset.isClickedEventBound = "true"
-      }
-    })
+    // 给具有data-testId的元素 和 可交互元素注册事件
+    document
+      .querySelectorAll(`[data-testid],${this.interactiveTags.join(",")}`)
+      .forEach((element: Element) => {
+        const htmlElement = element as HTMLElement
+        if (!htmlElement.dataset.isClickedEventBound) {
+          htmlElement.addEventListener(
+            "click",
+            this._buildClickHandler(htmlElement)
+          )
+          htmlElement.dataset.isClickedEventBound = "true"
+        }
+      })
   }
 
   // 从子节点中选择没有testid的可交互节点
@@ -92,7 +97,7 @@ export class SelectorRecorder {
 
   private _buildClickHandler(element: HTMLElement) {
     return (event: Event) => {
-      event.stopPropagation()
+      // 去重，如果和上一次点击的dom元素一样，则不打印
       if (this.preEventTarget === event.target) {
         return
       }
@@ -101,38 +106,43 @@ export class SelectorRecorder {
     }
   }
 
-  private _printSelector(element: HTMLElement, event: Event) {
-    const selector: string[] = []
-    let el: HTMLElement | null = element
-    // todo 这里的逻辑得想想怎么改 具体要获取哪些节点的content
-    const interactiveChild: HTMLElement | null =
-      this._traverseInteractiveChild(el)
-    if (interactiveChild && interactiveChild !== el) {
-      selector.push(interactiveChild.tagName.toLowerCase())
-    }
+  // leading true trailing false实现只执行最前面的事件
+  private _printSelector = debounce(
+    (element: HTMLElement, event: Event) => {
+      const selector: string[] = []
+      let el: HTMLElement | null = element
+      // todo 这里的逻辑得想想怎么改 具体要获取哪些节点的content
+      const interactiveChild: HTMLElement | null =
+        this._traverseInteractiveChild(el)
+      if (interactiveChild && interactiveChild !== el) {
+        selector.push(interactiveChild.tagName.toLowerCase())
+      }
 
-    while (el && el.tagName.toLowerCase() !== "body") {
-      const testid = el.dataset.testid
-      if (testid) {
-        const selectorStr = `[data-testid="${testid}"]`
-        selector.unshift(selectorStr)
-        if (this.counter[testid] <= 1) {
-          break
+      while (el && el.tagName.toLowerCase() !== "body") {
+        const testid = el.dataset.testid
+        if (testid) {
+          const selectorStr = `[data-testid="${testid}"]`
+          selector.unshift(selectorStr)
+          if (this.counter[testid] <= 1) {
+            break
+          }
         }
+        el = el.parentElement
       }
-      el = el.parentElement
-    }
-    const selectorStr = `${selector.join(" ")}`
+      const selectorStr = `${selector.join(" ")}`
 
-    this.setSelectorList?.((oldList: TargetNode[]) => [
-      ...oldList,
-      {
-        selector: selectorStr,
-        content: interactiveChild?.textContent || ""
-      }
-    ])
-    this.preEventTarget = event.target
-  }
+      this.setSelectorList?.((oldList: TargetNode[]) => [
+        ...oldList,
+        {
+          selector: selectorStr,
+          content: interactiveChild?.textContent || ""
+        }
+      ])
+      this.preEventTarget = event.target
+    },
+    1000,
+    { leading: true, trailing: false }
+  )
 
   run() {
     "use strict"
