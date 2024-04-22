@@ -1,5 +1,7 @@
 import { debounce } from "lodash-es"
 
+import { GENERATE_BY_CLASS_STORE } from "./hooks/storageKeys"
+
 export interface TargetNode {
   selector: string
   content: string
@@ -54,6 +56,10 @@ export class SelectorRecorder {
     return { tree: this.tree, counter: this.counter }
   }
 
+  private _isInteractiveChild(node: HTMLElement) {
+    return this.interactiveTags.includes(node.tagName.toLowerCase())
+  }
+
   private _bindTestIdClickEvents() {
     // 给具有data-testId的元素 和 可交互元素注册事件
     document
@@ -76,10 +82,7 @@ export class SelectorRecorder {
       return null
     }
 
-    if (
-      this.interactiveTags.includes(node.tagName.toLowerCase()) &&
-      !node.dataset.testid
-    ) {
+    if (this._isInteractiveChild(node) && !node.dataset.testid) {
       return node
     }
 
@@ -108,20 +111,25 @@ export class SelectorRecorder {
 
   // leading true trailing false实现只执行最前面的事件
   private _printSelector = debounce(
-    (element: HTMLElement, event: Event) => {
+    async (element: HTMLElement, event: Event) => {
       const selector: string[] = []
       let el: HTMLElement | null = element
       // todo 这里的逻辑得想想怎么改 具体要获取哪些节点的content
       const interactiveChild: HTMLElement | null =
         this._traverseInteractiveChild(el)
-      if (interactiveChild && interactiveChild !== el) {
+
+      // 如果自己本身就是可交互元素，并且没有testId的话 可以考虑作为selector的一部分
+      if (interactiveChild /**  && interactiveChild !== el */) {
         selector.push(interactiveChild.tagName.toLowerCase())
       }
 
+      let hasTestIdParent = false
+      // 向上查找data-testId，直到引用唯一
       while (el && el.tagName.toLowerCase() !== "body") {
         const testid = el.dataset.testid
         if (testid) {
           const selectorStr = `[data-testid="${testid}"]`
+          hasTestIdParent = true
           selector.unshift(selectorStr)
           if (this.counter[testid] <= 1) {
             break
@@ -129,6 +137,19 @@ export class SelectorRecorder {
         }
         el = el.parentElement
       }
+      const generateByClass =
+        await GENERATE_BY_CLASS_STORE.get("generateByClass")
+
+      // 如果没有具有data-testId的父亲，就把自己的类选择器生成
+      if (!hasTestIdParent && generateByClass) {
+        selector.unshift(
+          Array.from(element.classList)
+            .map((i) => `.${i}`)
+            .join("")
+        )
+      }
+
+      // todo: check，如果遇到.arco-checkbox-target input这种没法唯一确定的，需要结合content/idx额外考虑
       const selectorStr = `${selector.join(" ")}`
 
       this.setSelectorList?.((oldList: TargetNode[]) => [
