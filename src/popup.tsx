@@ -4,7 +4,7 @@ import "~/style.css"
 
 function IndexPopup() {
   return (
-    <div className="recorder-flex recorder-items-center recorder-justify-center recorder-h-16 recorder-w-40">
+    <div className="r-flex r-items-center r-justify-center r-h-16 r-w-40">
       <CountButton />
     </div>
   )
