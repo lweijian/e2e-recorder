@@ -1,6 +1,10 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap");
-@import "@arco-design/web-react/dist/css/arco.css";
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+[id*=plasmo-overlay]{
+  width: 0px;
+  height: 0px;
+}

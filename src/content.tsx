@@ -4,8 +4,6 @@ import type { PlasmoCSConfig } from "plasmo"
 import { useEffect, useMemo, useState } from "react"
 import Draggable from "react-draggable" // The default
 
-import "@arco-design/web-react/dist/css/arco.css"
-
 import { useStorage } from "@plasmohq/storage/hook"
 
 import SelectorRecorder from "~/selector-recorder"
@@ -50,16 +48,20 @@ const RecorderOverlay = () => {
         right: document.body.clientWidth - 50,
         bottom: document.body.clientHeight - 50
       }}>
-      <div className="r-z-50 r-flex r-flex r-flex-start r-fixed r-top-0 r-left-0 r-bg-white r-border r-rounded-lg r-p-3 r-min-w-[500px] r-h-[100px] r-shadow-xl r-relative">
+      <div className="r-z-50 r-flex r-flex r-top-0 r-left-0 r-bg-white r-border r-rounded-lg r-p-3 r-min-w-[600px]  r-h-[300px] r-shadow-xl r-relative">
         <IconDragDotVertical
           className="r-w-[15px] r-h-[15px] r-mt-[3px]	r-cursor-move r-absolute r-left-3 r-top-3"
           // 用捕获事件，交互会比冒泡好（响应更快）
           onMouseDownCapture={() => setDisabled(false)}
           onMouseUpCapture={() => setDisabled(true)}
         />
-        <div className="r-flex-col r-ml-[7px] r-pl-[20px] r-h-full r-overflow-auto r-pr-10">
+        <div className="r-flex-col r-ml-[7px] r-pl-[20px] r-w-full r-h-full r-overflow-auto r-pr-10">
           {recorderList.map((item, idx) => {
-            return <div key={idx}>selector: {item.selector}</div>
+            return (
+              <div className="r-break-all	r-mb-3" key={idx}>
+                {item.selector}
+              </div>
+            )
           })}
         </div>
       </div>
