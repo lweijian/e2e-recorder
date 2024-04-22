@@ -4,8 +4,10 @@ import type { DraggableEventHandler } from "react-draggable"
 
 import { useStorage } from "@plasmohq/storage/hook"
 
+import { POSITION } from "./storageKeys"
+
 export default function useStoragePosition() {
-  const [position, setPosition] = useStorage("position")
+  const [position, setPosition] = useStorage(POSITION)
   const [innerPosition, setInnerPosition] = useState(position)
 
   useEffect(() => {
