@@ -50,14 +50,14 @@ const RecorderOverlay = () => {
         right: document.body.clientWidth - 50,
         bottom: document.body.clientHeight - 50
       }}>
-      <div className="r-z-50 r-flex r-flex r-flex-start r-fixed r-top-0 r-left-0 r-bg-white r-border r-rounded-lg r-p-3 r-min-w-[500px] r-h-[100px] r-overflow-auto  r-shadow-xl">
+      <div className="r-z-50 r-flex r-flex r-flex-start r-fixed r-top-0 r-left-0 r-bg-white r-border r-rounded-lg r-p-3 r-min-w-[500px] r-h-[100px] r-shadow-xl r-relative">
         <IconDragDotVertical
-          className="r-w-[15px] r-h-[15px] r-mt-[3px]	r-cursor-move "
+          className="r-w-[15px] r-h-[15px] r-mt-[3px]	r-cursor-move r-absolute r-left-3 r-top-3"
           // 用捕获事件，交互会比冒泡好（响应更快）
           onMouseDownCapture={() => setDisabled(false)}
           onMouseUpCapture={() => setDisabled(true)}
         />
-        <div className="r-flex-col r-ml-[7px]">
+        <div className="r-flex-col r-ml-[7px] r-pl-[20px] r-h-full r-overflow-auto r-pr-10">
           {recorderList.map((item, idx) => {
             return <div key={idx}>selector: {item.selector}</div>
           })}
