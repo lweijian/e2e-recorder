@@ -1,7 +1,7 @@
 import { IconDragDotVertical } from "@arco-design/web-react/icon"
 import cssText from "data-text:~/style.css"
 import type { PlasmoCSConfig } from "plasmo"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import Draggable from "react-draggable" // The default
 
 import { useStorage } from "@plasmohq/storage/hook"
@@ -35,6 +35,15 @@ const RecorderOverlay = () => {
     }
   }, [])
 
+  const scrollRef = useRef()
+
+  useEffect(() => {
+    const ele = scrollRef.current as HTMLElement
+    if (ele) {
+      ele.scrollTop = ele.scrollHeight
+    }
+  }, [recorderList])
+
   const { position, onDrag } = useStoragePosition()
   const [disabled, setDisabled] = useState(true)
   return show ? (
@@ -55,7 +64,9 @@ const RecorderOverlay = () => {
           onMouseDownCapture={() => setDisabled(false)}
           onMouseUpCapture={() => setDisabled(true)}
         />
-        <div className="r-flex-col r-ml-[7px] r-pl-[20px] r-w-full r-h-full r-overflow-auto r-pr-10">
+        <div
+          className="r-flex-col r-ml-[7px] r-pl-[20px] r-w-full r-h-full r-overflow-auto r-pr-10"
+          ref={scrollRef}>
           {recorderList.map((item, idx) => {
             return (
               <div className="r-break-all	r-mb-3" key={idx}>
