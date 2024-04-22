@@ -1,13 +1,16 @@
 import cssText from "data-text:~/style.css"
 import type { PlasmoCSConfig } from "plasmo"
-import { useEffect } from "react"
-import { RecoilRoot, useRecoilValue, useSetRecoilState } from "recoil"
+import { useEffect, useMemo, useState } from "react"
 
 import SelectorRecorder from "~/selector-recorder"
-import { selectorListAtom } from "~/store"
 
 export const config: PlasmoCSConfig = {
-  matches: ["https://ads.tiktok.com/*", "http://127.0.0.1:8080/*"]
+  matches: [
+    "https://ads.tiktok.com/*",
+    "http://127.0.0.1:8080/*",
+    "http://localhost:8080/*",
+    "https://portal.bitsnaastest.com/*"
+  ]
 }
 
 export const getStyle = () => {
@@ -16,22 +19,23 @@ export const getStyle = () => {
   return style
 }
 const RecorderOverlay = () => {
-  const selectorList = useRecoilValue(selectorListAtom)
-  const setSelectorListAtom = useSetRecoilState(selectorListAtom)
+  const [recorderList, setRecorderList] = useState([])
+  const recorder = useMemo(() => new SelectorRecorder(setRecorderList), [])
   useEffect(() => {
-    const recorder = new SelectorRecorder(setSelectorListAtom)
     return () => {
       recorder.destroy()
     }
   }, [])
+
+  useEffect(() => {
+    console.log(recorderList)
+  }, [recorderList])
   return (
-    <RecoilRoot>
-      <div className="recorder-z-50 recorder-flex recorder-fixed recorder-top-32 recorder-right-8">
-        {selectorList.map((item) => {
-          return <div>selector: {item.selector}</div>
-        })}
-      </div>
-    </RecoilRoot>
+    <div className="r-z-50 r-flex r-flex-col r-fixed r-top-32 r-right-8 r-bg-white r-border r-rounded-md r-p-3 r-w-[500px] r-h-[100px] r-overflow-auto">
+      {recorderList.map((item, idx) => {
+        return <div key={idx}>selector: {item.selector}</div>
+      })}
+    </div>
   )
 }
 
