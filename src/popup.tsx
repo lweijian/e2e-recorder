@@ -20,7 +20,7 @@ function IndexPopup() {
     instance: GENERATE_BY_CLASS_STORE
   })
   return (
-    <div className="r-flex-col r-p-5 r-items-center r-justify-center r-w-[500px]">
+    <div className="flex-col p-5 items-center justify-center w-[500px]">
       <div>
         展示浮窗 <Switch checked={showContent} onChange={setShowContent} />
       </div>

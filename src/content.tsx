@@ -49,24 +49,24 @@ const RecorderOverlay = () => {
     <Draggable
       onDrag={onDrag}
       position={position}
-      handle="#recorder-drag-icon"
+      handle="#recordedrag-icon"
       bounds={{
         left: 0,
         top: 0,
         right: document.body.clientWidth - 50,
         bottom: document.body.clientHeight - 50
       }}>
-      <div className="r-z-50 r-flex r-flex r-top-0 r-left-0 r-bg-white r-border r-rounded-lg r-p-3 r-min-w-[600px]  r-h-[300px] r-shadow-xl r-relative">
+      <div className="z-50 flex flex top-0 left-0 bg-white border rounded-lg p-3 min-w-[600px]  h-[300px] shadow-xl relative">
         <IconDragDotVertical
-          className="r-w-[15px] r-h-[15px] r-mt-[3px]	r-cursor-move r-absolute r-left-3 r-top-3"
-          id="recorder-drag-icon"
+          className="w-[15px] h-[15px] mt-[3px]	cursor-move absolute left-3 top-3"
+          id="recordedrag-icon"
         />
         <div
-          className="r-flex-col r-ml-[7px] r-pl-[20px] r-w-full r-h-full r-overflow-auto r-pr-10"
+          className="flex-col ml-[7px] pl-[20px] w-full h-full overflow-auto p10"
           ref={scrollRef}>
           {recorderList.map((item, idx) => {
             return (
-              <div className="r-break-all	r-mb-3" key={idx}>
+              <div className="break-all	mb-3" key={idx}>
                 {item.selector}
               </div>
             )
