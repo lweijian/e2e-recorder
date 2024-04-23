@@ -7,11 +7,11 @@ export const CountButton = () => {
     <button
       onClick={() => increase()}
       type="button"
-      className="r-flex r-flex-row r-items-center r-px-4 r-py-2 r-text-sm r-rounded-lg r-transition-all r-border-none
-      r-shadow-lg hover:r-shadow-md
-      active:r-scale-105 r-bg-slate-50 hover:r-bg-slate-100 r-text-slate-800 hover:r-text-slate-900">
+      className="flex flex-row items-center px-4 py-2 text-sm rounded-lg transition-all border-none
+      shadow-lg hover:shadow-md
+      active:scale-105 bg-slate-50 hover:bg-slate-100 text-slate-800 hover:text-slate-900">
       Count:
-      <span className="r-inline-flex r-items-center r-justify-center r-w-8 r-h-4 r-ml-2 r-text-xs r-font-semibold r-rounded-full">
+      <span className="inline-flex items-center justify-center w-8 h-4 ml-2 text-xs font-semibold rounded-full">
         {count + 1}
       </span>
     </button>
