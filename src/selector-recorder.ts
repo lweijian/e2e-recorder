@@ -14,7 +14,7 @@ export class SelectorRecorder {
   counter: Object = {}
   interactiveTags: string[] = ["button", "a", "input", "select", "textarea"]
   private preEventTarget: EventTarget | null = null
-  private timerId: number | null = null
+  private observer: MutationObserver | null = null
   private setSelectorList
 
   constructor(setSelectorList) {
@@ -169,17 +169,29 @@ export class SelectorRecorder {
 
   run() {
     "use strict"
-    this.timerId = window.setInterval(() => {
+    // this.timerId = window.setInterval(() => {
+    //   this._traverseDOM(document.body)
+    //   this._bindTestIdClickEvents()
+    // }, 1000)
+    const fn = debounce(() => {
+      console.log("监听到改变了")
       this._traverseDOM(document.body)
       this._bindTestIdClickEvents()
-    }, 1000)
+    }, 200)
+    this.observer = new MutationObserver(fn)
+    this.observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+      characterData: false,
+      attributes: false
+    })
   }
 
   destroy() {
     // Stop the timer.
-    if (this.timerId !== null) {
-      clearInterval(this.timerId)
-      this.timerId = null
+    if (this.observer !== null) {
+      this.observer.disconnect()
+      this.observer = null
     }
 
     // Clear the tree and counter.
