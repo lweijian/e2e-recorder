@@ -6,7 +6,7 @@ import Draggable from "react-draggable" // The default
 
 import { useStorage } from "@plasmohq/storage/hook"
 
-import SelectorRecorder from "~/selector-recorder"
+import SelectorRecorder, { type TargetNode } from "~/selector-recorder"
 
 import { SHOW_CONTENT_UI } from "./hooks/storageKeys"
 import useStoragePosition from "./hooks/useStoragePosition"
@@ -26,7 +26,7 @@ export const getStyle = () => {
   return style
 }
 const RecorderOverlay = () => {
-  const [recorderList, setRecorderList] = useState([])
+  const [recorderList, setRecorderList] = useState<TargetNode[]>([])
   const recorder = useMemo(() => new SelectorRecorder(setRecorderList), [])
   const [show] = useStorage(SHOW_CONTENT_UI)
   useEffect(() => {
@@ -67,7 +67,7 @@ const RecorderOverlay = () => {
           {recorderList.map((item, idx) => {
             return (
               <div className="break-all	mb-3" key={idx}>
-                {item.selector}
+                {item.selector} {item.count}
               </div>
             )
           })}

@@ -5,6 +5,7 @@ import { GENERATE_BY_CLASS_STORE } from "./hooks/storageKeys"
 export interface TargetNode {
   selector: string
   content: string
+  count: number
 }
 
 // todo 改造成react组件
@@ -151,17 +152,18 @@ export class SelectorRecorder {
 
       // todo: check，如果遇到.arco-checkbox-target input这种没法唯一确定的，需要结合content/idx额外考虑
       const selectorStr = `${selector.join(" ")}`
-
+      const count = document.querySelectorAll(selectorStr).length
       this.setSelectorList?.((oldList: TargetNode[]) => [
         ...oldList,
         {
           selector: selectorStr,
-          content: interactiveChild?.textContent || ""
+          content: interactiveChild?.textContent || "",
+          count
         }
       ])
       this.preEventTarget = event.target
     },
-    1000,
+    10,
     { leading: true, trailing: false }
   )
 
