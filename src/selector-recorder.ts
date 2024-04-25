@@ -70,7 +70,8 @@ export class SelectorRecorder {
         if (!htmlElement.dataset.isClickedEventBound) {
           htmlElement.addEventListener(
             "click",
-            this._buildClickHandler(htmlElement)
+            this._buildClickHandler(htmlElement),
+            true
           )
           htmlElement.dataset.isClickedEventBound = "true"
         }
@@ -111,61 +112,56 @@ export class SelectorRecorder {
   }
 
   // leading true trailing false实现只执行最前面的事件
-  private _printSelector = debounce(
-    async (element: HTMLElement, event: Event) => {
-      const selector: string[] = []
-      let el: HTMLElement | null = element
-      // todo 这里的逻辑得想想怎么改 具体要获取哪些节点的content
-      const interactiveChild: HTMLElement | null =
-        this._traverseInteractiveChild(el)
+  private _printSelector = async (element: HTMLElement, event: Event) => {
+    const selector: string[] = []
+    let el: HTMLElement | null = element
+    // todo 这里的逻辑得想想怎么改 具体要获取哪些节点的content
+    const interactiveChild: HTMLElement | null =
+      this._traverseInteractiveChild(el)
 
-      // 如果自己本身就是可交互元素，并且没有testId的话 可以考虑作为selector的一部分
-      if (interactiveChild /**  && interactiveChild !== el */) {
-        selector.push(interactiveChild.tagName.toLowerCase())
-      }
+    // 如果自己本身就是可交互元素，并且没有testId的话 可以考虑作为selector的一部分
+    if (interactiveChild /**  && interactiveChild !== el */) {
+      selector.push(interactiveChild.tagName.toLowerCase())
+    }
 
-      let hasTestIdParent = false
-      // 向上查找data-testId，直到引用唯一
-      while (el && el.tagName.toLowerCase() !== "body") {
-        const testid = el.dataset.testid
-        if (testid) {
-          const selectorStr = `[data-testid="${testid}"]`
-          hasTestIdParent = true
-          selector.unshift(selectorStr)
-          if (this.counter[testid] <= 1) {
-            break
-          }
+    let hasTestIdParent = false
+    // 向上查找data-testId，直到引用唯一
+    while (el && el.tagName.toLowerCase() !== "body") {
+      const testid = el.dataset.testid
+      if (testid) {
+        const selectorStr = `[data-testid="${testid}"]`
+        hasTestIdParent = true
+        selector.unshift(selectorStr)
+        if (this.counter[testid] <= 1) {
+          break
         }
-        el = el.parentElement
       }
-      const generateByClass =
-        await GENERATE_BY_CLASS_STORE.get("generateByClass")
+      el = el.parentElement
+    }
+    const generateByClass = await GENERATE_BY_CLASS_STORE.get("generateByClass")
 
-      // 如果没有具有data-testId的父亲，就把自己的类选择器生成
-      if (!hasTestIdParent && generateByClass) {
-        selector.unshift(
-          Array.from(element.classList)
-            .map((i) => `.${i}`)
-            .join("")
-        )
+    // 如果没有具有data-testId的父亲，就把自己的类选择器生成
+    if (!hasTestIdParent && generateByClass) {
+      selector.unshift(
+        Array.from(element.classList)
+          .map((i) => `.${i}`)
+          .join("")
+      )
+    }
+
+    // todo: check，如果遇到.arco-checkbox-target input这种没法唯一确定的，需要结合content/idx额外考虑
+    const selectorStr = `${selector.join(" ")}`
+    const count = document.querySelectorAll(selectorStr).length
+    this.setSelectorList?.((oldList: TargetNode[]) => [
+      ...oldList,
+      {
+        selector: selectorStr,
+        content: interactiveChild?.textContent || "",
+        count
       }
-
-      // todo: check，如果遇到.arco-checkbox-target input这种没法唯一确定的，需要结合content/idx额外考虑
-      const selectorStr = `${selector.join(" ")}`
-      const count = document.querySelectorAll(selectorStr).length
-      this.setSelectorList?.((oldList: TargetNode[]) => [
-        ...oldList,
-        {
-          selector: selectorStr,
-          content: interactiveChild?.textContent || "",
-          count
-        }
-      ])
-      this.preEventTarget = event.target
-    },
-    10,
-    { leading: true, trailing: false }
-  )
+    ])
+    this.preEventTarget = event.target
+  }
 
   run() {
     "use strict"
