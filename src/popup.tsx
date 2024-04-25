@@ -7,18 +7,11 @@ import { CountButton } from "~/features/count-button"
 import "~/style.css"
 import "@arco-design/web-react/dist/css/arco.css"
 
-import {
-  GENERATE_BY_CLASS,
-  GENERATE_BY_CLASS_STORE,
-  SHOW_CONTENT_UI
-} from "./hooks/storageKeys"
+import useStore, { GENERATE_BY_CLASS, SHOW_CONTENT_UI } from "./hooks/useStore"
 
 function IndexPopup() {
-  const [showContent, setShowContent] = useStorage(SHOW_CONTENT_UI)
-  const [generateByClass, setGenerageByClass] = useStorage({
-    key: GENERATE_BY_CLASS,
-    instance: GENERATE_BY_CLASS_STORE
-  })
+  const [showContent, setShowContent] = useStore(SHOW_CONTENT_UI)
+  const [generateByClass, setGenerageByClass] = useStore(GENERATE_BY_CLASS)
   return (
     <div className="flex-col p-5 items-center justify-center w-[500px]">
       <div>

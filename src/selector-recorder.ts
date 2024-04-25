@@ -1,6 +1,6 @@
 import { debounce } from "lodash-es"
 
-import { GENERATE_BY_CLASS, GENERATE_BY_CLASS_STORE } from "./hooks/storageKeys"
+import { CONFIG_STORE, GENERATE_BY_CLASS } from "./hooks/useStore"
 
 export interface TargetNode {
   selector: string
@@ -194,7 +194,7 @@ export class SelectorRecorder {
     })
 
     // 监听配置项的变化
-    GENERATE_BY_CLASS_STORE.watch({
+    CONFIG_STORE.watch({
       [GENERATE_BY_CLASS]: ({ newValue }) => {
         this.config[GENERATE_BY_CLASS] = Boolean(newValue)
       }

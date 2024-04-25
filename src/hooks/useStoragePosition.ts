@@ -2,12 +2,10 @@ import { debounce } from "lodash-es"
 import { useEffect, useMemo, useState } from "react"
 import type { DraggableEventHandler } from "react-draggable"
 
-import { useStorage } from "@plasmohq/storage/hook"
-
-import { POSITION } from "./storageKeys"
+import useStore, { POSITION } from "./useStore"
 
 export default function useStoragePosition() {
-  const [position, setPosition] = useStorage(POSITION)
+  const [position, setPosition] = useStore(POSITION)
   const [innerPosition, setInnerPosition] = useState(position)
 
   useEffect(() => {
