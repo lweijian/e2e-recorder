@@ -4,8 +4,6 @@ import type { PlasmoCSConfig } from "plasmo"
 import { useEffect, useMemo, useRef, useState } from "react"
 import Draggable from "react-draggable" // The default
 
-import { useStorage } from "@plasmohq/storage/hook"
-
 import SelectorRecorder, { type TargetNode } from "~/selector-recorder"
 
 import useStoragePosition from "./hooks/useStoragePosition"
@@ -56,7 +54,7 @@ const RecorderOverlay = () => {
         right: document.body.clientWidth - 50,
         bottom: document.body.clientHeight - 50
       }}>
-      <div className="z-50 flex flex top-0 left-0 bg-white border rounded-lg p-3 min-w-[600px]  h-[300px] shadow-xl relative">
+      <div className="z-50 flex top-0 left-0 bg-white border rounded-lg p-3 min-w-[600px]  h-[300px] shadow-xl relative">
         <IconDragDotVertical
           className="w-[15px] h-[15px] mt-[3px]	cursor-move absolute left-3 top-3"
           id="recordedrag-icon"
