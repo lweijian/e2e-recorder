@@ -1,6 +1,6 @@
 import { debounce } from "lodash-es"
 
-import { GENERATE_BY_CLASS_STORE } from "./hooks/storageKeys"
+import { GENERATE_BY_CLASS, GENERATE_BY_CLASS_STORE } from "./hooks/storageKeys"
 
 export interface TargetNode {
   selector: string
@@ -16,6 +16,10 @@ export class SelectorRecorder {
   private preEventTarget: EventTarget | null = null
   private observer: MutationObserver | null = null
   private setSelectorList
+  // 从store里读取配置
+  private config: { [GENERATE_BY_CLASS]: boolean } = {
+    [GENERATE_BY_CLASS]: false
+  }
 
   constructor(setSelectorList) {
     this.setSelectorList = setSelectorList
@@ -112,7 +116,7 @@ export class SelectorRecorder {
   }
 
   // leading true trailing false实现只执行最前面的事件
-  private _printSelector = async (element: HTMLElement, event: Event) => {
+  private _printSelector = (element: HTMLElement, event: Event) => {
     const selector: string[] = []
     let el: HTMLElement | null = element
     // todo 这里的逻辑得想想怎么改 具体要获取哪些节点的content
@@ -138,10 +142,10 @@ export class SelectorRecorder {
       }
       el = el.parentElement
     }
-    const generateByClass = await GENERATE_BY_CLASS_STORE.get("generateByClass")
+    //
 
     // 如果没有具有data-testId的父亲，就把自己的类选择器生成
-    if (!hasTestIdParent && generateByClass) {
+    if (!hasTestIdParent /**&& generateByClass */) {
       selector.unshift(
         Array.from(element.classList)
           .map((i) => `.${i}`)
@@ -170,7 +174,7 @@ export class SelectorRecorder {
     200
   )
 
-  run() {
+  async run() {
     "use strict"
     // this.timerId = window.setInterval(() => {
     //   this._traverseDOM(document.body)
@@ -180,13 +184,20 @@ export class SelectorRecorder {
       console.log("监听到改变了")
       this._traverseDOM(document.body)
       this._bindTestIdClickEvents()
-    }, 200)
+    }, 500)
     this.observer = new MutationObserver(fn)
     this.observer.observe(document.body, {
       childList: true,
       subtree: true,
       characterData: false,
       attributes: false
+    })
+
+    // 监听配置项的变化
+    GENERATE_BY_CLASS_STORE.watch({
+      [GENERATE_BY_CLASS]: ({ newValue }) => {
+        this.config[GENERATE_BY_CLASS] = Boolean(newValue)
+      }
     })
   }
 
