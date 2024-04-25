@@ -8,8 +8,8 @@ import { useStorage } from "@plasmohq/storage/hook"
 
 import SelectorRecorder, { type TargetNode } from "~/selector-recorder"
 
-import { SHOW_CONTENT_UI } from "./hooks/storageKeys"
 import useStoragePosition from "./hooks/useStoragePosition"
+import useStore, { SHOW_CONTENT_UI } from "./hooks/useStore"
 
 export const config: PlasmoCSConfig = {
   matches: [
@@ -28,7 +28,7 @@ export const getStyle = () => {
 const RecorderOverlay = () => {
   const [recorderList, setRecorderList] = useState<TargetNode[]>([])
   const recorder = useMemo(() => new SelectorRecorder(setRecorderList), [])
-  const [show] = useStorage(SHOW_CONTENT_UI)
+  const [show] = useStore(SHOW_CONTENT_UI)
   useEffect(() => {
     return () => {
       recorder.destroy()
