@@ -152,16 +152,23 @@ export class SelectorRecorder {
     // todo: check，如果遇到.arco-checkbox-target input这种没法唯一确定的，需要结合content/idx额外考虑
     const selectorStr = `${selector.join(" ")}`
     const count = document.querySelectorAll(selectorStr).length
-    this.setSelectorList?.((oldList: TargetNode[]) => [
-      ...oldList,
-      {
-        selector: selectorStr,
-        content: interactiveChild?.textContent || "",
-        count
-      }
-    ])
-    this.preEventTarget = event.target
+    this._debounceSetSelectorList(selectorStr, selectorStr, count, event)
   }
+
+  private _debounceSetSelectorList = debounce(
+    (selector: string, content: string, count: number, event: Event) => {
+      this.setSelectorList?.((oldList: TargetNode[]) => [
+        ...oldList,
+        {
+          selector,
+          content,
+          count
+        }
+      ])
+      this.preEventTarget = event.target
+    },
+    200
+  )
 
   run() {
     "use strict"
