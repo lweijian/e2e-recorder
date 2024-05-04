@@ -6,7 +6,7 @@ settings:
 
 dependencies:
   '@arco-design/web-react':
-    specifier: ^2.62.0
+    specifier: ^2.61.3
     version: 2.62.0(@types/react@18.2.48)(react-dom@18.2.0)(react@18.2.0)
   '@plasmohq/storage':
     specifier: ^1.10.0
@@ -38,7 +38,7 @@ devDependencies:
     specifier: ^6.4.2
     version: 6.4.2(vitest@1.5.2)
   '@testing-library/react':
-    specifier: ^15.0.5
+    specifier: ^15.0.2
     version: 15.0.5(react-dom@18.2.0)(react@18.2.0)
   '@testing-library/react-hooks':
     specifier: ^8.0.1
@@ -71,7 +71,7 @@ devDependencies:
     specifier: 5.3.3
     version: 5.3.3
   vitest:
-    specifier: ^1.5.2
+    specifier: ^1.5.0
     version: 1.5.2(@types/node@20.11.5)(jsdom@24.0.0)
 
 packages:
