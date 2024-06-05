@@ -43,6 +43,13 @@ const RecorderOverlay = () => {
   }, [recorderList])
 
   const { position, onDrag } = useStoragePosition()
+
+  const highlightDom = (selector: string) => {
+    document.styleSheets[0].insertRule(
+      selector + " { background-color: rgba(255,0,0,.3) !important; }",
+      0
+    )
+  }
   return show ? (
     <Draggable
       onDrag={onDrag}
@@ -64,7 +71,13 @@ const RecorderOverlay = () => {
           ref={scrollRef}>
           {recorderList.map((item, idx) => {
             return (
-              <div className="break-all	mb-3" key={idx}>
+              <div
+                className="break-all	mb-3"
+                key={idx}
+                onMouseEnter={() => highlightDom(item.selector)}
+                onMouseLeave={() => {
+                  document.styleSheets[0].removeRule(0)
+                }}>
                 {item.selector} {item.count}
               </div>
             )
