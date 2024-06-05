@@ -45,9 +45,18 @@ const RecorderOverlay = () => {
   const { position, onDrag } = useStoragePosition()
 
   const highlightDom = (selector: string) => {
+    console.log(selector)
     document.styleSheets[0].insertRule(
-      selector + " { background-color: rgba(255,0,0,.3) !important; }",
+      `
+      ${selector} { background-color: rgba(255,0,0,.3) !important;position:relative;border-radius: 5px; }
+      `,
       0
+    )
+    document.styleSheets[0].insertRule(
+      `
+      ${selector}::after { position:absolute;content:'';width:100%;height:100%;border:1px solid red;z-index:999;border-radius: 5px;top:0;left:0;}
+      `,
+      1
     )
   }
   return show ? (
@@ -76,6 +85,7 @@ const RecorderOverlay = () => {
                 key={idx}
                 onMouseEnter={() => highlightDom(item.selector)}
                 onMouseLeave={() => {
+                  document.styleSheets[0].removeRule(1)
                   document.styleSheets[0].removeRule(0)
                 }}>
                 {item.selector} {item.count}
