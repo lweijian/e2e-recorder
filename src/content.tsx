@@ -13,6 +13,7 @@ import useScrollToBottom from "./hooks/useScrollToBottom"
 import useStorageValue from "./hooks/useStorageValue"
 import useStore, { POSITION, SHOW_CONTENT_UI, TEMPLATE } from "./hooks/useStore"
 import useTemplate from "./hooks/useTemplate"
+import { copyText } from "./utils"
 
 export const config: PlasmoCSConfig = {
   matches: [
@@ -63,14 +64,20 @@ const RecorderOverlay = () => {
           className="flex-col ml-[7px] px-[20px] w-full h-full overflow-auto overflow-x-hidden p10"
           ref={scrollRef}>
           {recorderList.map((item, idx) => {
+            const code = handleCode(item)
             return (
               <div
                 className="break-all	mb-3 animate__fadeInRight"
                 key={idx}
                 onMouseEnter={() => highlightDom(item)}
                 onMouseLeave={() => removeHighLightDom(item)}>
-                <SyntaxHighlighter language="javascript" style={vscDarkPlus}>
-                  {handleCode(item)}
+                <SyntaxHighlighter
+                  language="javascript"
+                  style={vscDarkPlus}
+                  onClick={() => {
+                    copyText(code)
+                  }}>
+                  {code}
                 </SyntaxHighlighter>
               </div>
             )
