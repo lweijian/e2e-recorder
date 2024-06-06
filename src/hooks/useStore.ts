@@ -12,7 +12,7 @@ export const TEMPLATE = "template"
 
 export const CONFIG_STORE = new Storage()
 
-type StorageKey =
+export type StorageKey =
   | typeof POSITION
   | typeof SHOW_CONTENT_UI
   | typeof GENERATE_BY_CLASS

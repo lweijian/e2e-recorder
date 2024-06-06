@@ -6,8 +6,8 @@ import Draggable from "react-draggable" // The default
 
 import SelectorRecorder, { type TargetNode } from "~/selector-recorder"
 
-import useStoragePosition from "./hooks/useStoragePosition"
-import useStore, { SHOW_CONTENT_UI } from "./hooks/useStore"
+import useStorageValue from "./hooks/useStorageValue"
+import useStore, { POSITION, SHOW_CONTENT_UI, TEMPLATE } from "./hooks/useStore"
 
 export const config: PlasmoCSConfig = {
   matches: [
@@ -42,27 +42,28 @@ const RecorderOverlay = () => {
     }
   }, [recorderList])
 
-  const { position, onDrag } = useStoragePosition()
+  const { state, onChange } = useStorageValue(POSITION)
+  const { state: template } = useStorageValue<string>(TEMPLATE)
 
   const highlightDom = (selector: string) => {
     console.log(selector)
     document.styleSheets[0].insertRule(
       `
-      ${selector} { background-color: rgba(255,0,0,.3) !important;position:relative;border-radius: 5px; }
+      ${selector} { background-color: rgba(255,0,0,.3) !important;position:relative; }
       `,
       0
     )
     document.styleSheets[0].insertRule(
       `
-      ${selector}::after { position:absolute;content:'';width:100%;height:100%;border:1px solid red;z-index:999;border-radius: 5px;top:0;left:0;}
+      ${selector}::after { position:absolute;content:'';width:100%;height:100%;outline:1px solid red;z-index:999;top:0;left:0;}
       `,
       1
     )
   }
   return show ? (
     <Draggable
-      onDrag={onDrag}
-      position={position}
+      onDrag={(e, { x, y }) => onChange({ x, y })}
+      position={state}
       handle="#recordedrag-icon"
       bounds={{
         left: 0,
@@ -70,25 +71,32 @@ const RecorderOverlay = () => {
         right: document.body.clientWidth - 50,
         bottom: document.body.clientHeight - 50
       }}>
-      <div className="z-50 flex top-0 left-0 bg-white border rounded-lg p-3 min-w-[600px]  h-[300px] shadow-xl relative">
+      <div className="z-50 flex top-0 left-0 bg-white border rounded-lg p-3 min-w-[600px]  h-[300px] shadow-xl relative ">
         <IconDragDotVertical
           className="w-[15px] h-[15px] mt-[3px]	cursor-move absolute left-3 top-3"
           id="recordedrag-icon"
         />
         <div
-          className="flex-col ml-[7px] pl-[20px] w-full h-full overflow-auto p10"
+          className="flex-col ml-[7px] pl-[20px] w-full h-full overflow-auto overflow-x-hidden p10"
           ref={scrollRef}>
           {recorderList.map((item, idx) => {
+            const code = template
+              .replace(
+                "$text",
+                item.content ? `"${item.content}"` : `undefined`
+              )
+              .replace("$selector", `"${item.selector}"`)
+              .replace("$idx", `${item.idx}`)
             return (
               <div
-                className="break-all	mb-3"
+                className="break-all	mb-3 animate__fadeInRight"
                 key={idx}
                 onMouseEnter={() => highlightDom(item.selector)}
                 onMouseLeave={() => {
                   document.styleSheets[0].removeRule(1)
                   document.styleSheets[0].removeRule(0)
                 }}>
-                {item.selector} {item.count}
+                <p>{code}</p>
               </div>
             )
           })}

@@ -1,11 +1,12 @@
 import { debounce } from "lodash-es"
 
-import { CONFIG_STORE, GENERATE_BY_CLASS } from "./hooks/useStore"
+import { getInfoBySelector, hasTestId } from "./utils"
 
 export interface TargetNode {
   selector: string
   content: string
   count: number
+  idx: number
 }
 
 // todo 改造成react组件
@@ -15,11 +16,9 @@ export class SelectorRecorder {
   interactiveTags: string[] = ["button", "a", "input", "select", "textarea"]
   private preEventTarget: EventTarget | null = null
   private observer: MutationObserver | null = null
-  private setSelectorList
-  // 从store里读取配置
-  private config: { [GENERATE_BY_CLASS]: boolean } = {
-    [GENERATE_BY_CLASS]: false
-  }
+  private setSelectorList: (
+    args: (oldList: TargetNode[]) => TargetNode[]
+  ) => void
 
   constructor(setSelectorList) {
     this.setSelectorList = setSelectorList
@@ -33,7 +32,6 @@ export class SelectorRecorder {
     const dfs = (node: HTMLElement, tree: Record<string, any>) => {
       if (node.dataset && node.dataset.testid) {
         const testid = node.dataset.testid
-
         if (!this.counter[testid]) {
           this.counter[testid] = 0
         }
@@ -66,20 +64,7 @@ export class SelectorRecorder {
   }
 
   private _bindTestIdClickEvents() {
-    // 给具有data-testId的元素 和 可交互元素注册事件
-    document
-      .querySelectorAll(`[data-testid],${this.interactiveTags.join(",")}`)
-      .forEach((element: Element) => {
-        const htmlElement = element as HTMLElement
-        if (!htmlElement.dataset.isClickedEventBound) {
-          htmlElement.addEventListener(
-            "click",
-            this._buildClickHandler(htmlElement),
-            true
-          )
-          htmlElement.dataset.isClickedEventBound = "true"
-        }
-      })
+    document.addEventListener("click", this._buildClickHandler(), true)
   }
 
   // 从子节点中选择没有testid的可交互节点
@@ -104,13 +89,13 @@ export class SelectorRecorder {
     return targetChild
   }
 
-  private _buildClickHandler(element: HTMLElement) {
+  private _buildClickHandler() {
     return (event: Event) => {
       // 去重，如果和上一次点击的dom元素一样，则不打印
       if (this.preEventTarget === event.target) {
         return
       }
-      this._printSelector(element, event)
+      this._printSelector(event.target as HTMLElement, event)
       this.preEventTarget = null
     }
   }
@@ -119,22 +104,23 @@ export class SelectorRecorder {
   private _printSelector = (element: HTMLElement, event: Event) => {
     const selector: string[] = []
     let el: HTMLElement | null = element
+
     // todo 这里的逻辑得想想怎么改 具体要获取哪些节点的content
-    const interactiveChild: HTMLElement | null =
-      this._traverseInteractiveChild(el)
+    // const interactiveChild: HTMLElement | null =
+    //   this._traverseInteractiveChild(el)
 
-    // 如果自己本身就是可交互元素，并且没有testId的话 可以考虑作为selector的一部分
-    if (interactiveChild /**  && interactiveChild !== el */) {
-      selector.push(interactiveChild.tagName.toLowerCase())
-    }
+    // // 如果自己本身就是可交互元素，并且没有testId的话 可以考虑作为selector的一部分
+    // if (interactiveChild /**  && interactiveChild !== el */) {
+    //   selector.push(interactiveChild.tagName.toLowerCase())
+    // }
 
-    let hasTestIdParent = false
+    let hasParentTestId = false
     // 向上查找data-testId，直到引用唯一
     while (el && el.tagName.toLowerCase() !== "body") {
       const testid = el.dataset.testid
       if (testid) {
         const selectorStr = `[data-testid="${testid}"]`
-        hasTestIdParent = true
+        hasParentTestId = true
         selector.unshift(selectorStr)
         if (this.counter[testid] <= 1) {
           break
@@ -142,44 +128,61 @@ export class SelectorRecorder {
       }
       el = el.parentElement
     }
-    //
 
-    // 如果没有具有data-testId的父亲，就把自己的类选择器生成
-    if (!hasTestIdParent /**&& generateByClass */) {
-      selector.unshift(
+    // 如果点击元素本身就有testid，则不需要进一步注入点击元素的类选择器
+    if (!hasTestId(element)) {
+      selector.push(
         Array.from(element.classList)
+          // 过滤掉一些和交互相关的类，这些会导致选择器失效
+          .filter(
+            (i) =>
+              !i.includes("active") &&
+              !i.includes("hover") &&
+              !i.includes("focus") &&
+              !i.includes("selected") &&
+              !i.includes("checked")
+          )
           .map((i) => `.${i}`)
           .join("")
       )
     }
-
-    // todo: check，如果遇到.arco-checkbox-target input这种没法唯一确定的，需要结合content/idx额外考虑
     const selectorStr = `${selector.join(" ")}`
-    const count = document.querySelectorAll(selectorStr).length
-    this._debounceSetSelectorList(selectorStr, selectorStr, count, event)
+    // todo: check，如果遇到.arco-checkbox-target input这种没法唯一确定的，需要结合content/idx额外考虑
+    const { count, idx } = getInfoBySelector(selectorStr, element)
+    // 选择器对应的元素里并没有当前元素，需要更进一步去定位
+    this._debounceSetSelectorList(
+      selectorStr,
+      element.innerText,
+      count,
+      idx,
+      event
+    )
   }
 
   private _debounceSetSelectorList = debounce(
-    (selector: string, content: string, count: number, event: Event) => {
+    (
+      selector: string,
+      content: string,
+      count: number,
+      idx: number,
+      event: Event
+    ) => {
       this.setSelectorList?.((oldList: TargetNode[]) => [
         ...oldList,
         {
           selector,
           content,
-          count
+          count,
+          idx
         }
       ])
       this.preEventTarget = event.target
     },
-    200
+    300
   )
 
   async run() {
     "use strict"
-    // this.timerId = window.setInterval(() => {
-    //   this._traverseDOM(document.body)
-    //   this._bindTestIdClickEvents()
-    // }, 1000)
     const fn = debounce(() => {
       console.log("监听到改变了")
       this._traverseDOM(document.body)
@@ -194,11 +197,11 @@ export class SelectorRecorder {
     })
 
     // 监听配置项的变化
-    CONFIG_STORE.watch({
-      [GENERATE_BY_CLASS]: ({ newValue }) => {
-        this.config[GENERATE_BY_CLASS] = Boolean(newValue)
-      }
-    })
+    // CONFIG_STORE.watch({
+    //   [GENERATE_BY_CLASS]: ({ newValue }) => {
+    //     this.config[GENERATE_BY_CLASS] = Boolean(newValue)
+    //   }
+    // })
   }
 
   destroy() {
@@ -213,16 +216,7 @@ export class SelectorRecorder {
     this.counter = {}
 
     // Unbind the click events.
-    document.querySelectorAll("[data-testid]").forEach((element: Element) => {
-      const htmlElement = element as HTMLElement
-      if (htmlElement.dataset.isClickedEventBound) {
-        htmlElement.removeEventListener(
-          "click",
-          this._buildClickHandler(htmlElement)
-        )
-        delete htmlElement.dataset.isClickedEventBound
-      }
-    })
+    document.removeEventListener("click", this._buildClickHandler())
 
     // Reset the preEventTarget.
     this.preEventTarget = null
