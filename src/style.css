@@ -46,3 +46,6 @@ code{
   white-space: pre-wrap !important;
 }
 
+pre{
+  border-radius: 5px;
+}

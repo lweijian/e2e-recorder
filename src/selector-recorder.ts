@@ -1,6 +1,6 @@
 import { debounce } from "lodash-es"
 
-import { getInfoBySelector, hasTestId } from "./utils"
+import { getInfoBySelector, hasTestId, removeEmptyStr } from "./utils"
 
 export interface TargetNode {
   selector: string
@@ -147,16 +147,21 @@ export class SelectorRecorder {
       )
     }
     const selectorStr = `${selector.join(" ")}`
-    // todo: check，如果遇到.arco-checkbox-target input这种没法唯一确定的，需要结合content/idx额外考虑
     const { count, idx } = getInfoBySelector(selectorStr, element)
-    // 选择器对应的元素里并没有当前元素，需要更进一步去定位
-    this._debounceSetSelectorList(
-      selectorStr,
-      element.innerText,
-      count,
-      idx,
-      event
-    )
+
+    // 只有在selector字符串有效，并且innerText不包含换行符时（误点击点击最外层的父元素，导致拿了所有子元素的innerText的集合）
+    if (
+      removeEmptyStr(selectorStr).length !== 0 &&
+      !element.innerText.includes("\n")
+    ) {
+      this._debounceSetSelectorList(
+        selectorStr,
+        element.innerText,
+        count,
+        idx,
+        event
+      )
+    }
   }
 
   private _debounceSetSelectorList = debounce(
