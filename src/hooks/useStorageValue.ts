@@ -4,9 +4,18 @@ import type { DraggableEventHandler } from "react-draggable"
 
 import useStore, { type StorageKey } from "./useStore"
 
-export default function useStorageValue<T = any>(key: StorageKey) {
+export default function useStorageValue<T = any>(
+  key: StorageKey,
+  initialState?: T
+) {
   const [state, setState] = useStore(key)
-  const [innerState, setInnerState] = useState<T>(state)
+  const [innerState, setInnerState] = useState<T>(initialState ?? state)
+
+  useEffect(() => {
+    if (initialState) {
+      setState(initialState)
+    }
+  }, [])
 
   useEffect(() => {
     setInnerState(state)

@@ -23,7 +23,11 @@ function IndexPopup() {
         <div className="text-xs text-gray-500">
           支持$text,$selector,$idx变量，其中$text为元素的文本，$selector为元素的选择器，$idx为元素在页面中的顺序
         </div>
-        <Input value={state} onChange={onChange} />
+        <Input.TextArea
+          style={{ height: "100px" }}
+          value={state}
+          onChange={onChange}
+        />
       </div>
     </div>
   )
