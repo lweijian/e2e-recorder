@@ -39,4 +39,10 @@
   -webkit-animation-name: fadeInRight;
   animation-name: fadeInRight;
   animation-duration: .5s;
+  font-size: 12px;
 }
+
+code{
+  white-space: pre-wrap !important;
+}
+
