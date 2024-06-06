@@ -152,7 +152,7 @@ export class SelectorRecorder {
     // 只有在selector字符串有效，并且innerText不包含换行符时（误点击点击最外层的父元素，导致拿了所有子元素的innerText的集合）
     if (
       removeEmptyStr(selectorStr).length !== 0 &&
-      !element.innerText.includes("\n")
+      !element.innerText?.includes("\n")
     ) {
       this._debounceSetSelectorList(
         selectorStr,
