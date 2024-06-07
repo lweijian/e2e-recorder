@@ -12,7 +12,6 @@ export default function useTemplate() {
   )
 
   const info = useMemo(() => {
-    console.log(template)
     return {
       hasSelector: template?.includes("$selector"),
       hasText: template?.includes("$text"),
