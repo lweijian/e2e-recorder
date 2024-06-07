@@ -45,7 +45,7 @@ export default function useHighLightDom(
       if (info?.hasIdx) {
         res = [res[idx]]
       }
-      if (info?.hasText) {
+      if (info?.hasText && content) {
         res = res.filter((element) => {
           return (element as unknown as HTMLElement).innerText.includes(content)
         })
