@@ -37,7 +37,7 @@ export default function useHighLightDom() {
       return undefined
     }
     const classList = Array.from(document.querySelectorAll(selector))[idx]
-      .classList
+      ?.classList
     return classList
   }
 
