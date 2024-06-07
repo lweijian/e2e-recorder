@@ -219,7 +219,6 @@ export class SelectorRecorder {
   async run() {
     "use strict"
     const fn = debounce(() => {
-      console.log("监听到改变了")
       this._traverseDOM(document.body)
       this._bindTestIdClickEvents()
     }, 500)

@@ -30,6 +30,5 @@ export function copyText(text: string) {
   input.select()
   document.execCommand("copy")
   document.body.removeChild(input)
-  console.log("复制成功")
   Message.success("复制成功")
 }

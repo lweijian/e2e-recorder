@@ -57,7 +57,6 @@ export default function useHighLightDom(
 
   const highlightDom = (item: TargetNode) => {
     const doms = getDom(item)
-    console.log(doms)
     doms?.forEach((dom) => dom?.classList?.add("hightlight-dom"))
   }
 
