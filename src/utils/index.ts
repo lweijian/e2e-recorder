@@ -1,3 +1,5 @@
+import { Message } from "@arco-design/web-react"
+
 export function getInfoBySelector(selector: string, target: HTMLElement) {
   if (removeEmptyStr(selector).length === 0) {
     return {
@@ -32,4 +34,5 @@ export function copyText(text: string) {
   document.execCommand("copy")
   document.body.removeChild(input)
   console.log("复制成功")
+  Message.success("复制成功")
 }

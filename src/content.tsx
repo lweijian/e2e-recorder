@@ -1,8 +1,11 @@
+import "@arco-design/web-react/es/Message/style/index.css"
+
 import { IconDragDotVertical } from "@arco-design/web-react/icon"
+import globalCss from "data-text:@arco-design/web-react/es/Message/style/index.css"
 import cssText from "data-text:~/style.css"
 import type { PlasmoCSConfig } from "plasmo"
 import { useEffect, useMemo, useState } from "react"
-import Draggable from "react-draggable" // The default
+import Draggable from "react-draggable"
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter"
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism"
 
@@ -11,7 +14,7 @@ import SelectorRecorder, { type TargetNode } from "~/selector-recorder"
 import useHighLightDom from "./hooks/useHighlightDom"
 import useScrollToBottom from "./hooks/useScrollToBottom"
 import useStorageValue from "./hooks/useStorageValue"
-import useStore, { POSITION, SHOW_CONTENT_UI, TEMPLATE } from "./hooks/useStore"
+import useStore, { POSITION, SHOW_CONTENT_UI } from "./hooks/useStore"
 import useTemplate from "./hooks/useTemplate"
 import { copyText } from "./utils"
 
@@ -26,7 +29,8 @@ export const config: PlasmoCSConfig = {
 
 export const getStyle = () => {
   const style = document.createElement("style")
-  style.textContent = cssText
+  style.textContent = globalCss + cssText
+  console.log(style.textContent, globalCss, cssText)
   return style
 }
 const RecorderOverlay = () => {
