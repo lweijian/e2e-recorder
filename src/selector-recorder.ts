@@ -115,15 +115,52 @@ export class SelectorRecorder {
     // }
 
     let hasParentTestId = false
+    let cache_selector = []
+    let preCount = -1
     // 向上查找data-testId，直到引用唯一
     while (el && el.tagName.toLowerCase() !== "body") {
       const testid = el.dataset.testid
       if (testid) {
         const selectorStr = `[data-testid="${testid}"]`
         hasParentTestId = true
-        selector.unshift(selectorStr)
-        if (this.counter[testid] <= 1) {
-          break
+        // 遇到第一个testId
+        if (preCount === -1) {
+          selector.unshift(selectorStr)
+          const currentCount = document.querySelectorAll(selectorStr).length
+          console.log("第一次遇到id", selectorStr, currentCount)
+          // 如果已经能确定了，则退出
+          if (currentCount === 1) {
+            break
+          }
+          preCount = currentCount
+        } else {
+          // 加上选择器后的数量
+          const currentCount = document.querySelectorAll(
+            `${[selectorStr, ...selector].join(" ")}`
+          ).length
+          console.log(
+            `新增了父级的选择器之后：${[selectorStr, ...selector].join(" ")}`,
+            currentCount
+          )
+          // 如果加上选择器之后数量比没加选择器时一样，继续找
+          if (currentCount === preCount) {
+            cache_selector.push(selectorStr)
+          }
+          // 如果加上选择器之后数量比没加选择器时少，push到selector里
+          else if (currentCount < preCount) {
+            cache_selector.push(selectorStr)
+            cache_selector.forEach((i) => selector.unshift(i))
+            cache_selector = []
+            if (currentCount <= 1) {
+              break
+            }
+          }
+          // 大于，没必要继续找了，break
+          else if (currentCount > preCount) {
+            break
+          }
+
+          preCount = currentCount
         }
       }
       el = el.parentElement
@@ -131,20 +168,22 @@ export class SelectorRecorder {
 
     // 如果点击元素本身就有testid，则不需要进一步注入点击元素的类选择器
     if (!hasTestId(element)) {
-      selector.push(
-        Array.from(element.classList)
-          // 过滤掉一些和交互相关的类，这些会导致选择器失效
-          .filter(
-            (i) =>
-              !i.includes("active") &&
-              !i.includes("hover") &&
-              !i.includes("focus") &&
-              !i.includes("selected") &&
-              !i.includes("checked")
-          )
-          .map((i) => `.${i}`)
-          .join("")
-      )
+      const classList = Array.from(element.classList)
+      const classStr = classList
+        // 过滤掉一些和交互相关的类，这些会导致选择器失效
+        .filter(
+          (i) =>
+            !i.includes("active") &&
+            !i.includes("hover") &&
+            !i.includes("focus") &&
+            !i.includes("selected") &&
+            !i.includes("checked")
+        )
+        .map((i) => `.${i}`)
+        .join("")
+      const id = element.id
+      // 优先级push兜底的选择器，进一步过滤
+      selector.push(id || classStr || element.tagName.toLowerCase())
     }
     const selectorStr = `${selector.join(" ")}`
     const { count, idx } = getInfoBySelector(selectorStr, element)
