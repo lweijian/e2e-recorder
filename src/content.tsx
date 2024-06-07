@@ -30,7 +30,6 @@ export const config: PlasmoCSConfig = {
 export const getStyle = () => {
   const style = document.createElement("style")
   style.textContent = globalCss + cssText
-  console.log(style.textContent, globalCss, cssText)
   return style
 }
 const RecorderOverlay = () => {
@@ -45,9 +44,9 @@ const RecorderOverlay = () => {
   }, [])
 
   const scrollRef = useScrollToBottom(recorderList)
-  const { handleCode } = useTemplate()
+  const { handleCode, info } = useTemplate()
 
-  const { highlightDom, removeHighLightDom } = useHighLightDom()
+  const { highlightDom, removeHighLightDom } = useHighLightDom(info)
   return show ? (
     <Draggable
       onDrag={(e, { x, y }) => onChange({ x, y })}

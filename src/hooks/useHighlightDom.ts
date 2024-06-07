@@ -1,9 +1,13 @@
-import { useEffect } from "react"
+import { useCallback, useEffect } from "react"
 
 import type { TargetNode } from "~/selector-recorder"
 import { removeEmptyStr } from "~/utils"
 
-export default function useHighLightDom() {
+import type useTemplate from "./useTemplate"
+
+export default function useHighLightDom(
+  info: ReturnType<typeof useTemplate>["info"]
+) {
   useEffect(() => {
     document.styleSheets[0].insertRule(
       `
@@ -31,24 +35,35 @@ export default function useHighLightDom() {
     )
   }, [])
 
-  function getClassList(item: TargetNode) {
-    const { selector, idx } = item
-    if (removeEmptyStr(selector).length === 0) {
-      return undefined
-    }
-    const classList = Array.from(document.querySelectorAll(selector))[idx]
-      ?.classList
-    return classList
-  }
+  const getDom = useCallback(
+    function (item: TargetNode) {
+      const { selector, idx, content } = item
+      if (removeEmptyStr(selector).length === 0) {
+        return undefined
+      }
+      let res: Element[] = Array.from(document.querySelectorAll(selector))
+      if (info?.hasIdx) {
+        res = [res[idx]]
+      }
+      if (info?.hasText) {
+        res = res.filter((element) => {
+          return (element as unknown as HTMLElement).innerText.includes(content)
+        })
+      }
+      return res
+    },
+    [info]
+  )
 
   const highlightDom = (item: TargetNode) => {
-    const classList = getClassList(item)
-    classList?.add("hightlight-dom")
+    const doms = getDom(item)
+    console.log(doms)
+    doms?.forEach((dom) => dom?.classList?.add("hightlight-dom"))
   }
 
   const removeHighLightDom = (item: TargetNode) => {
-    const classList = getClassList(item)
-    classList?.remove("hightlight-dom")
+    const doms = getDom(item)
+    doms?.forEach((dom) => dom?.classList?.remove("hightlight-dom"))
   }
   return {
     highlightDom,

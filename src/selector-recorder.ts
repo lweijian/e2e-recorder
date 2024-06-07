@@ -105,16 +105,6 @@ export class SelectorRecorder {
     const selector: string[] = []
     let el: HTMLElement | null = element
 
-    // todo 这里的逻辑得想想怎么改 具体要获取哪些节点的content
-    // const interactiveChild: HTMLElement | null =
-    //   this._traverseInteractiveChild(el)
-
-    // // 如果自己本身就是可交互元素，并且没有testId的话 可以考虑作为selector的一部分
-    // if (interactiveChild /**  && interactiveChild !== el */) {
-    //   selector.push(interactiveChild.tagName.toLowerCase())
-    // }
-
-    let hasParentTestId = false
     let cache_selector = []
     let preCount = -1
     // 向上查找data-testId，直到引用唯一
@@ -122,7 +112,6 @@ export class SelectorRecorder {
       const testid = el.dataset.testid
       if (testid) {
         const selectorStr = `[data-testid="${testid}"]`
-        hasParentTestId = true
         // 遇到第一个testId
         if (preCount === -1) {
           selector.unshift(selectorStr)
@@ -166,7 +155,7 @@ export class SelectorRecorder {
       el = el.parentElement
     }
 
-    // 如果点击元素本身就有testid，则不需要进一步注入点击元素的类选择器
+    // 如果点击元素本身就有testid，则不需要进一步注入element.target元素的相关选择器
     if (!hasTestId(element)) {
       const classList = Array.from(element.classList)
       const classStr = classList
@@ -185,6 +174,7 @@ export class SelectorRecorder {
       // 优先级push兜底的选择器，进一步过滤
       selector.push(id || classStr || element.tagName.toLowerCase())
     }
+
     const selectorStr = `${selector.join(" ")}`
     const { count, idx } = getInfoBySelector(selectorStr, element)
 
