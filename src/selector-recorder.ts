@@ -11,9 +11,6 @@ export interface TargetNode {
 
 // todo 改造成react组件
 export class SelectorRecorder {
-  tree: Object = {}
-  counter: Object = {}
-  interactiveTags: string[] = ["button", "a", "input", "select", "textarea"]
   private preEventTarget: EventTarget | null = null
   private observer: MutationObserver | null = null
   private setSelectorList: (
@@ -25,68 +22,8 @@ export class SelectorRecorder {
     this.run()
   }
 
-  private _traverseDOM(element: HTMLElement) {
-    this.tree = {}
-    this.counter = {}
-
-    const dfs = (node: HTMLElement, tree: Record<string, any>) => {
-      if (node.dataset && node.dataset.testid) {
-        const testid = node.dataset.testid
-        if (!this.counter[testid]) {
-          this.counter[testid] = 0
-        }
-        this.counter[testid]++
-
-        if (!tree[testid]) {
-          tree[testid] = []
-        }
-
-        Array.from(node.children).forEach((childNode: Element) => {
-          let subtree = {}
-          dfs(childNode as HTMLElement, subtree)
-          if (Object.keys(subtree).length > 0) {
-            tree[testid].push(subtree)
-          }
-        })
-      } else {
-        Array.from(node.children).forEach((childNode: Element) => {
-          dfs(childNode as HTMLElement, tree)
-        })
-      }
-    }
-
-    dfs(element, this.tree)
-    return { tree: this.tree, counter: this.counter }
-  }
-
-  private _isInteractiveChild(node: HTMLElement) {
-    return this.interactiveTags.includes(node.tagName.toLowerCase())
-  }
-
   private _bindTestIdClickEvents() {
     document.addEventListener("click", this._buildClickHandler(), true)
-  }
-
-  // 从子节点中选择没有testid的可交互节点
-  private _traverseInteractiveChild(node: HTMLElement): HTMLElement | null {
-    if (!node) {
-      return null
-    }
-
-    if (this._isInteractiveChild(node) && !node.dataset.testid) {
-      return node
-    }
-
-    let targetChild = null
-    Array.from(node.children).some((childNode: Element) => {
-      const result = this._traverseInteractiveChild(childNode as HTMLElement)
-      if (result) {
-        targetChild = result
-        return true
-      }
-      return false
-    })
-    return targetChild
   }
 
   private _buildClickHandler() {
@@ -219,7 +156,6 @@ export class SelectorRecorder {
   async run() {
     "use strict"
     const fn = debounce(() => {
-      this._traverseDOM(document.body)
       this._bindTestIdClickEvents()
     }, 500)
     this.observer = new MutationObserver(fn)
@@ -246,9 +182,6 @@ export class SelectorRecorder {
     }
 
     // Clear the tree and counter.
-    this.tree = {}
-    this.counter = {}
-
     // Unbind the click events.
     document.removeEventListener("click", this._buildClickHandler())
 
