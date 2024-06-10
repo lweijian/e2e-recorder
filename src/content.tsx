@@ -23,7 +23,9 @@ export const config: PlasmoCSConfig = {
     "https://ads.tiktok.com/*",
     "http://127.0.0.1:8080/*",
     "http://localhost:8080/*",
-    "https://portal.bitsnaastest.com/*"
+    "https://portal.bitsnaastest.com/*",
+    "https://bitsnaas-dev2.bytedance.net/*",
+    "https://bitsnaas-dev1.bytedance.net/*"
   ]
 }
 
