@@ -158,14 +158,15 @@ export class SelectorRecorder {
     const fn = debounce(() => {
       this._bindTestIdClickEvents()
     }, 500)
-    this.observer = new MutationObserver(fn)
-    this.observer.observe(document.body, {
-      childList: true,
-      subtree: true,
-      characterData: false,
-      attributes: false
-    })
+    // this.observer = new MutationObserver(fn)
+    // this.observer.observe(document.body, {
+    //   childList: true,
+    //   subtree: true,
+    //   characterData: false,
+    //   attributes: false
+    // })
 
+    fn()
     // 监听配置项的变化
     // CONFIG_STORE.watch({
     //   [GENERATE_BY_CLASS]: ({ newValue }) => {
