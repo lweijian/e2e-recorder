@@ -21,8 +21,8 @@ export default function useTemplate() {
 
   function handleCode(item: TargetNode) {
     return template
-      .replace("$text", item.content ? `'${item.content}'` : `undefined`)
-      .replace("$selector", `'${item.selector}'`)
+      .replace("$text", item.content ? `"${item.content}"` : `undefined`)
+      .replace("$selector", `"${item.selector}"`)
       .replace("$idx", `${item.idx}`)
   }
   return {

@@ -48,7 +48,7 @@ export class SelectorRecorder {
     while (el && el.tagName.toLowerCase() !== "body") {
       const testid = el.dataset.testid
       if (testid) {
-        const selectorStr = `[data-testid="${testid}"]`
+        const selectorStr = `[data-testid='${testid}']`
         // 遇到第一个testId
         if (preCount === -1) {
           selector.unshift(selectorStr)
