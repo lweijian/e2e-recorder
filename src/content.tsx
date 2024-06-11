@@ -48,7 +48,8 @@ const RecorderOverlay = () => {
   const scrollRef = useScrollToBottom(recorderList)
   const { handleCode, info } = useTemplate()
 
-  const { highlightDom, removeHighLightDom } = useHighLightDom(info)
+  // todo 这里得对iframe处理一下，目前传入document，并不能在iframe页面高亮
+  const { highlightDom, removeHighLightDom } = useHighLightDom(info, document)
   return show ? (
     <Draggable
       onDrag={(e, { x, y }) => onChange({ x, y })}
