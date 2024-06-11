@@ -8,40 +8,42 @@ export interface TargetNode {
   count: number
   idx: number
 }
+export interface ObserverNode {
+  observer: MutationObserver
+  observedElement: HTMLElement | Document
+}
 
-// todo 改造成react组件
 export class SelectorRecorder {
   private preEventTarget: EventTarget | null = null
-  private observer: MutationObserver | null = null
+  private observers: ObserverNode[] = []
   private setSelectorList: (
     args: (oldList: TargetNode[]) => TargetNode[]
   ) => void
 
   constructor(setSelectorList) {
     this.setSelectorList = setSelectorList
-    this.run()
+    this.run(document)
+  }
+  private _bindTestIdClickEvents(observedElement: HTMLElement | Document) {
+    observedElement.addEventListener("click", this._buildClickHandler(observedElement), true)
   }
 
-  private _bindTestIdClickEvents() {
-    document.addEventListener("click", this._buildClickHandler(), true)
-  }
-
-  private _buildClickHandler() {
+  //todo 这里的clickHandler生成逻辑有问题,这样每次都生成一个新对函数，removeEvent会失效
+  private _buildClickHandler(source: HTMLElement | Document) {
     return (event: Event) => {
       // 去重，如果和上一次点击的dom元素一样，则不打印
       if (this.preEventTarget === event.target) {
         return
       }
-      this._printSelector(event.target as HTMLElement, event)
+      this._printSelector(event.target as HTMLElement, event, source)
       this.preEventTarget = null
     }
   }
 
   // leading true trailing false实现只执行最前面的事件
-  private _printSelector = (element: HTMLElement, event: Event) => {
+  private _printSelector = (element: HTMLElement, event: Event, source: HTMLElement|Document) => {
     const selector: string[] = []
     let el: HTMLElement | null = element
-
     let cache_selector = []
     let preCount = -1
     // 向上查找data-testId，直到引用唯一
@@ -52,7 +54,7 @@ export class SelectorRecorder {
         // 遇到第一个testId
         if (preCount === -1) {
           selector.unshift(selectorStr)
-          const currentCount = document.querySelectorAll(selectorStr).length
+          const currentCount = source.querySelectorAll(selectorStr).length
           console.log("第一次遇到id", selectorStr, currentCount)
           // 如果已经能确定了，则退出
           if (currentCount === 1) {
@@ -61,7 +63,7 @@ export class SelectorRecorder {
           preCount = currentCount
         } else {
           // 加上选择器后的数量
-          const currentCount = document.querySelectorAll(
+          const currentCount = source.querySelectorAll(
             `${[selectorStr, ...selector].join(" ")}`
           ).length
           console.log(
@@ -113,17 +115,17 @@ export class SelectorRecorder {
     }
 
     const selectorStr = `${selector.join(" ")}`
-    const { count, idx } = getInfoBySelector(selectorStr, element)
+    const { count, idx } = getInfoBySelector(selectorStr, element, source)
 
     // 只有在selector字符串有效，并且innerText不包含换行符时（误点击点击最外层的父元素，导致拿了所有子元素的innerText的集合）
     if (
       removeEmptyStr(selectorStr).length !== 0 &&
-      !element.innerText?.includes("\n") &&
+      !element?.innerText?.includes("\n") &&
       !selectorStr.includes("plasmo-csui")
     ) {
       this._debounceSetSelectorList(
         selectorStr,
-        element.innerText,
+        element?.innerText,
         count,
         idx,
         event
@@ -153,20 +155,45 @@ export class SelectorRecorder {
     300
   )
 
-  async run() {
-    "use strict"
-    const fn = debounce(() => {
-      this._bindTestIdClickEvents()
+  async run(observedElement: HTMLElement | Document) {
+    const debounceBindTestIdClickEvents = debounce(() => {
+      this._bindTestIdClickEvents(observedElement)
     }, 500)
-    // this.observer = new MutationObserver(fn)
-    // this.observer.observe(document.body, {
-    //   childList: true,
-    //   subtree: true,
-    //   characterData: false,
-    //   attributes: false
-    // })
 
-    fn()
+    const fn = (mutations)=>{
+      //绑定当前dom事件
+      debounceBindTestIdClickEvents()
+      // iframe
+      for (const mutation of mutations) {
+        if (mutation.type === "childList") {
+          for (const node of mutation.addedNodes) {
+            const iframes = node?.getElementsByTagName?.('iframe') || []
+            for (const iframe of iframes) {
+              iframe.onload = ()=> {
+                const iframeDoc = iframe.contentDocument || iframe.contentWindow.document
+                const index = this.observers.findIndex((observerNode) => {
+                  return observerNode.observedElement === iframeDoc;
+                });
+                if (index >= 0) return;
+                this.run(iframeDoc)
+              }
+            }
+          }
+        }
+      }
+    }
+    const observer = new MutationObserver(fn)
+    observer.observe(observedElement, {
+      childList: true,
+      subtree: true,
+      characterData: false,
+      attributes: false
+    })
+    this.observers.push({
+      observedElement,
+      observer
+    })
+
     // 监听配置项的变化
     // CONFIG_STORE.watch({
     //   [GENERATE_BY_CLASS]: ({ newValue }) => {
@@ -177,15 +204,18 @@ export class SelectorRecorder {
 
   destroy() {
     // Stop the timer.
-    if (this.observer !== null) {
-      this.observer.disconnect()
-      this.observer = null
+    if (this.observers.length > 0) {
+      this.observers.forEach((observerNode) => {
+        observerNode.observer.disconnect()
+        // Clear the tree and counter.
+        // Unbind the click events.
+        observerNode.observedElement.removeEventListener(
+          "click",
+          this._buildClickHandler(observerNode.observedElement)
+        )
+      })
+      this.observers = []
     }
-
-    // Clear the tree and counter.
-    // Unbind the click events.
-    document.removeEventListener("click", this._buildClickHandler())
-
     // Reset the preEventTarget.
     this.preEventTarget = null
   }

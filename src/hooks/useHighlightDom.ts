@@ -6,10 +6,11 @@ import { removeEmptyStr } from "~/utils"
 import type useTemplate from "./useTemplate"
 
 export default function useHighLightDom(
-  info: ReturnType<typeof useTemplate>["info"]
+  info: ReturnType<typeof useTemplate>["info"],
+  source: Document = document
 ) {
   useEffect(() => {
-    document.styleSheets[0].insertRule(
+    source.styleSheets[0].insertRule(
       `
       .hightlight-dom{
         background-color: rgba(255,0,0,.3) !important;
@@ -18,7 +19,7 @@ export default function useHighLightDom(
       `,
       0
     )
-    document.styleSheets[0].insertRule(
+      source.styleSheets[0].insertRule(
       `
       .hightlight-dom::after{ 
         position:absolute;
@@ -41,7 +42,7 @@ export default function useHighLightDom(
       if (removeEmptyStr(selector).length === 0) {
         return undefined
       }
-      let res: Element[] = Array.from(document.querySelectorAll(selector))
+      let res: Element[] = Array.from(source.querySelectorAll(selector))
       if (info?.hasIdx) {
         res = [res[idx]]
       }

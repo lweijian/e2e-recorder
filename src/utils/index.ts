@@ -1,13 +1,13 @@
 import { Message } from "@arco-design/web-react"
 
-export function getInfoBySelector(selector: string, target: HTMLElement) {
+export function getInfoBySelector(selector: string, target: HTMLElement,source: HTMLElement | Document) {
   if (removeEmptyStr(selector).length === 0) {
     return {
       count: 0,
       idx: -1
     }
   }
-  const domList = document.querySelectorAll(selector)
+  const domList = source.querySelectorAll(selector)
   const idx = Array.from(domList).findIndex((i) => i === target)
   return {
     count: domList.length,
