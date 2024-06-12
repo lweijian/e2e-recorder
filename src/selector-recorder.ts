@@ -2,15 +2,19 @@ import { debounce } from "lodash-es"
 
 import { getInfoBySelector, hasTestId, removeEmptyStr } from "./utils"
 
+export type Source = Document
+
 export interface TargetNode {
   selector: string
   content: string
   count: number
   idx: number
+  source: Source
 }
+
 export interface ObserverNode {
   observer: MutationObserver
-  observedElement: HTMLElement | Document
+  observedElement: Source
 }
 
 export class SelectorRecorder {
@@ -19,29 +23,35 @@ export class SelectorRecorder {
   private setSelectorList: (
     args: (oldList: TargetNode[]) => TargetNode[]
   ) => void
+  private handlerMap: Map<any, (event: Event) => void> = new Map()
+  private setSource: (args: (oldList: Source[]) => Source[]) => void
 
-  constructor(setSelectorList) {
+  constructor(setSelectorList, setSource) {
     this.setSelectorList = setSelectorList
+    this.setSource = setSource
     this.run(document)
   }
-  private _bindTestIdClickEvents(observedElement: HTMLElement | Document) {
-    observedElement.addEventListener("click", this._buildClickHandler(observedElement), true)
-  }
 
-  //todo 这里的clickHandler生成逻辑有问题,这样每次都生成一个新对函数，removeEvent会失效
-  private _buildClickHandler(source: HTMLElement | Document) {
-    return (event: Event) => {
+  // 给每个根节点添加事件代理
+  private _bindTestIdClickEvents(observedElement: Source) {
+    const fn = (event: Event) => {
       // 去重，如果和上一次点击的dom元素一样，则不打印
       if (this.preEventTarget === event.target) {
         return
       }
-      this._printSelector(event.target as HTMLElement, event, source)
+      this._printSelector(event.target as HTMLElement, event, observedElement)
       this.preEventTarget = null
     }
+    this.handlerMap.set(observedElement, fn)
+    observedElement.addEventListener("click", fn, true)
   }
 
   // leading true trailing false实现只执行最前面的事件
-  private _printSelector = (element: HTMLElement, event: Event, source: HTMLElement|Document) => {
+  private _printSelector = (
+    element: HTMLElement,
+    event: Event,
+    source: Source
+  ) => {
     const selector: string[] = []
     let el: HTMLElement | null = element
     let cache_selector = []
@@ -128,7 +138,8 @@ export class SelectorRecorder {
         element?.innerText,
         count,
         idx,
-        event
+        event,
+        source
       )
     }
   }
@@ -139,7 +150,8 @@ export class SelectorRecorder {
       content: string,
       count: number,
       idx: number,
-      event: Event
+      event: Event,
+      source: Source
     ) => {
       this.setSelectorList?.((oldList: TargetNode[]) => [
         ...oldList,
@@ -147,7 +159,8 @@ export class SelectorRecorder {
           selector,
           content,
           count,
-          idx
+          idx,
+          source
         }
       ])
       this.preEventTarget = event.target
@@ -155,26 +168,28 @@ export class SelectorRecorder {
     300
   )
 
-  async run(observedElement: HTMLElement | Document) {
+  async run(observedElement: Source) {
     const debounceBindTestIdClickEvents = debounce(() => {
       this._bindTestIdClickEvents(observedElement)
     }, 500)
 
-    const fn = (mutations)=>{
+    const fn = (mutations) => {
       //绑定当前dom事件
       debounceBindTestIdClickEvents()
       // iframe
       for (const mutation of mutations) {
         if (mutation.type === "childList") {
           for (const node of mutation.addedNodes) {
-            const iframes = node?.getElementsByTagName?.('iframe') || []
+            const iframes: HTMLIFrameElement[] =
+              node?.getElementsByTagName?.("iframe") || []
             for (const iframe of iframes) {
-              iframe.onload = ()=> {
-                const iframeDoc = iframe.contentDocument || iframe.contentWindow.document
+              iframe.onload = () => {
+                const iframeDoc =
+                  iframe.contentDocument || iframe.contentWindow.document
                 const index = this.observers.findIndex((observerNode) => {
-                  return observerNode.observedElement === iframeDoc;
-                });
-                if (index >= 0) return;
+                  return observerNode.observedElement === iframeDoc
+                })
+                if (index >= 0) return
                 this.run(iframeDoc)
               }
             }
@@ -193,6 +208,7 @@ export class SelectorRecorder {
       observedElement,
       observer
     })
+    this.setSource((oldList) => [...oldList, observedElement])
 
     // 监听配置项的变化
     // CONFIG_STORE.watch({
@@ -211,7 +227,7 @@ export class SelectorRecorder {
         // Unbind the click events.
         observerNode.observedElement.removeEventListener(
           "click",
-          this._buildClickHandler(observerNode.observedElement)
+          this.handlerMap.get(observerNode.observedElement)
         )
       })
       this.observers = []
