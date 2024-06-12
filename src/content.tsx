@@ -9,7 +9,10 @@ import Draggable from "react-draggable"
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter"
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism"
 
-import SelectorRecorder, { type TargetNode } from "~/selector-recorder"
+import SelectorRecorder, {
+  type Source,
+  type TargetNode
+} from "~/selector-recorder"
 
 import useHighLightDom from "./hooks/useHighlightDom"
 import useScrollToBottom from "./hooks/useScrollToBottom"
@@ -36,7 +39,11 @@ export const getStyle = () => {
 }
 const RecorderOverlay = () => {
   const [recorderList, setRecorderList] = useState<TargetNode[]>([])
-  const recorder = useMemo(() => new SelectorRecorder(setRecorderList), [])
+  const [source, setSource] = useState<Source[]>([])
+  const recorder = useMemo(
+    () => new SelectorRecorder(setRecorderList, setSource),
+    []
+  )
   const [show] = useStore(SHOW_CONTENT_UI)
   const { state, onChange } = useStorageValue(POSITION)
   useEffect(() => {
@@ -49,7 +56,7 @@ const RecorderOverlay = () => {
   const { handleCode, info } = useTemplate()
 
   // todo 这里得对iframe处理一下，目前传入document，并不能在iframe页面高亮
-  const { highlightDom, removeHighLightDom } = useHighLightDom(info, document)
+  const { highlightDom, removeHighLightDom } = useHighLightDom(info, source)
   return show ? (
     <Draggable
       onDrag={(e, { x, y }) => onChange({ x, y })}

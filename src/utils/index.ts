@@ -1,6 +1,12 @@
 import { Message } from "@arco-design/web-react"
 
-export function getInfoBySelector(selector: string, target: HTMLElement,source: HTMLElement | Document) {
+import type { Source } from "~/selector-recorder"
+
+export function getInfoBySelector(
+  selector: string,
+  target: HTMLElement,
+  source: Source
+) {
   if (removeEmptyStr(selector).length === 0) {
     return {
       count: 0,
