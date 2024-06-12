@@ -4,6 +4,8 @@ import { getInfoBySelector, hasTestId, removeEmptyStr } from "./utils"
 
 export type Source = Document
 
+let initializing = false
+let start = null
 export interface TargetNode {
   selector: string
   content: string
@@ -119,12 +121,17 @@ export class SelectorRecorder {
         )
         .map((i) => `.${i}`)
         .join("")
+        .replaceAll("[", "\\\\[")
+        .replaceAll("]", "\\\\]")
+        .replaceAll("#", "\\\\#")
+        .replaceAll(":", "\\\\:")
       const id = element.id
       // 优先级push兜底的选择器，进一步过滤
       selector.push(id || classStr || element.tagName.toLowerCase())
     }
 
     const selectorStr = `${selector.join(" ")}`
+    console.log(selectorStr)
     const { count, idx } = getInfoBySelector(selectorStr, element, source)
 
     // 只有在selector字符串有效，并且innerText不包含换行符时（误点击点击最外层的父元素，导致拿了所有子元素的innerText的集合）
@@ -172,6 +179,11 @@ export class SelectorRecorder {
     const debounceBindTestIdClickEvents = debounce(() => {
       this._bindTestIdClickEvents(observedElement)
     }, 500)
+    if (!initializing) {
+      initializing = true
+      start = Date.now()
+      console.log("开始初始化")
+    }
 
     const fn = (mutations) => {
       //绑定当前dom事件
@@ -210,12 +222,7 @@ export class SelectorRecorder {
     })
     this.setSource((oldList) => [...oldList, observedElement])
 
-    // 监听配置项的变化
-    // CONFIG_STORE.watch({
-    //   [GENERATE_BY_CLASS]: ({ newValue }) => {
-    //     this.config[GENERATE_BY_CLASS] = Boolean(newValue)
-    //   }
-    // })
+    console.log("初始化时间：", Date.now() - start)
   }
 
   destroy() {
