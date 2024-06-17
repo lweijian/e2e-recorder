@@ -29,9 +29,12 @@ export default function useHighLightDom(
       }
       `
 
-    sources.forEach((source) => {
-      source.styleSheets[0].insertRule(rule1, 0)
-      source.styleSheets[0].insertRule(rule2, 1)
+    // 延迟到下一个tick，否则在某些页面iframe会无法正常插入css
+    setTimeout(() => {
+      sources.forEach((source) => {
+        source.styleSheets[0].insertRule(rule1, 0)
+        source.styleSheets[0].insertRule(rule2, 1)
+      })
     })
     return () => {
       sources.forEach((source) => {
