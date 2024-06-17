@@ -44,8 +44,14 @@ export class SelectorRecorder {
       this._printSelector(event.target as HTMLElement, event, observedElement)
       this.preEventTarget = null
     }
-    this.handlerMap.set(observedElement, fn)
-    observedElement.addEventListener("click", fn, true)
+    if (!this.handlerMap.has(observedElement)) {
+      this.handlerMap.set(observedElement, fn)
+    }
+    observedElement.addEventListener(
+      "click",
+      this.handlerMap.get(observedElement),
+      true
+    )
   }
 
   // leading true trailing false实现只执行最前面的事件
@@ -58,6 +64,7 @@ export class SelectorRecorder {
     let el: HTMLElement | null = element
     let cache_selector = []
     let preCount = -1
+
     // 向上查找data-testId，直到引用唯一
     while (el && el.tagName.toLowerCase() !== "body") {
       const testid = el.dataset.testid
@@ -220,7 +227,7 @@ export class SelectorRecorder {
       observedElement,
       observer
     })
-    this.setSource((oldList) => [...oldList, observedElement])
+    this.setSource((oldList) => [...new Set([...oldList, observedElement])])
 
     console.log("初始化时间：", Date.now() - start)
   }
