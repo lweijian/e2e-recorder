@@ -133,12 +133,15 @@ export class SelectorRecorder {
         .replaceAll("#", "\\\\#")
         .replaceAll(":", "\\\\:")
       const id = element.id
-      // 优先级push兜底的选择器，进一步过滤
-      selector.push(id || classStr || element.tagName.toLowerCase())
+      if (id) {
+        selector.push("#" + id)
+      } else {
+        // 优先级push兜底的选择器，进一步过滤
+        selector.push(classStr || element.tagName.toLowerCase())
+      }
     }
 
     const selectorStr = `${selector.join(" ")}`
-    console.log(selectorStr)
     const { count, idx } = getInfoBySelector(selectorStr, element, source)
 
     // 只有在selector字符串有效，并且innerText不包含换行符时（误点击点击最外层的父元素，导致拿了所有子元素的innerText的集合）
