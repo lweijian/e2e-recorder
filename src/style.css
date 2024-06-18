@@ -4,7 +4,7 @@
 @tailwind components;
 @tailwind utilities;
 
-[id*=plasmo-overlay]{
+[id*="plasmo-overlay"] {
   width: 0px;
   height: 0px;
 }
@@ -38,19 +38,19 @@
 .animate__fadeInRight {
   -webkit-animation-name: fadeInRight;
   animation-name: fadeInRight;
-  animation-duration: .5s;
+  animation-duration: 0.5s;
   font-size: 12px;
 }
 
-code{
+code {
   white-space: pre-wrap !important;
 }
 
-pre{
+pre {
   border-radius: 5px;
   cursor: pointer;
 }
 
-.token{
+.token {
   word-break: break-all;
 }
