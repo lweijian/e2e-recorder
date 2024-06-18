@@ -78,6 +78,15 @@ const RecorderOverlay = () => {
           ref={scrollRef}>
           {recorderList.map((item, idx) => {
             const code = handleCode(item)
+            const isEnterNewSource =
+              idx > 0
+                ? recorderList[idx].source_info.source_selector !==
+                  recorderList[idx - 1].source_info.source_selector
+                : false
+
+            const comment = isEnterNewSource
+              ? `// 进入新的源: ${item.source_info.source_selector}\n`
+              : ""
             return (
               <div
                 className="break-all	mb-3 animate__fadeInRight"
@@ -90,7 +99,7 @@ const RecorderOverlay = () => {
                   onClick={() => {
                     copyText(code)
                   }}>
-                  {`${item.source_info.source_type}\n${item.source_info.source_selector}\n${code}`}
+                  {`${comment}${code}`}
                 </SyntaxHighlighter>
               </div>
             )

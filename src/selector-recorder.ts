@@ -35,7 +35,8 @@ export class SelectorRecorder {
     this.setSource = setSource
     this.run({
       observedElement: document,
-      source_type: "document"
+      source_type: "document",
+      source_selector: "document"
     })
   }
 
