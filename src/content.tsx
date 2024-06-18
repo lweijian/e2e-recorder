@@ -90,7 +90,7 @@ const RecorderOverlay = () => {
                   onClick={() => {
                     copyText(code)
                   }}>
-                  {code}
+                  {`${item.source_info.source_type}\n${item.source_info.source_selector}\n${code}`}
                 </SyntaxHighlighter>
               </div>
             )
