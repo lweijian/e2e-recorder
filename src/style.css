@@ -50,3 +50,7 @@ pre{
   border-radius: 5px;
   cursor: pointer;
 }
+
+.token{
+  word-break: break-all;
+}
