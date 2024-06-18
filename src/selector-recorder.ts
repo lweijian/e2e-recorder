@@ -1,17 +1,19 @@
-import { debounce } from "lodash-es"
-
 import { getInfoBySelector, hasTestId, removeEmptyStr } from "./utils"
 
 export type Source = Document
+export type SourceInfo = {
+  observedElement: Source
+  source_type: "iframe" | "document" | "web-component"
+  // 在source_type为document时 不需要传入selector，e2e代码可以直接拿到
+  source_selector?: string
+}
 
-let initializing = false
-let start = null
 export interface TargetNode {
   selector: string
   content: string
   count: number
   idx: number
-  source: Source
+  source_info: SourceInfo
 }
 
 export interface ObserverNode {
@@ -31,17 +33,21 @@ export class SelectorRecorder {
   constructor(setSelectorList, setSource) {
     this.setSelectorList = setSelectorList
     this.setSource = setSource
-    this.run(document)
+    this.run({
+      observedElement: document,
+      source_type: "document"
+    })
   }
 
   // 给每个根节点添加事件代理
-  private _bindTestIdClickEvents(observedElement: Source) {
+  private _bindTestIdClickEvents(info: SourceInfo) {
+    const { observedElement } = info
     const fn = (event: Event) => {
       // 去重，如果和上一次点击的dom元素一样，则不打印
       if (this.preEventTarget === event.target) {
         return
       }
-      this._printSelector(event.target as HTMLElement, event, observedElement)
+      this._printSelector(event.target as HTMLElement, event, info)
       this.preEventTarget = null
     }
     if (!this.handlerMap.has(observedElement)) {
@@ -49,8 +55,7 @@ export class SelectorRecorder {
     }
     observedElement.addEventListener(
       "click",
-      this.handlerMap.get(observedElement),
-      true
+      this.handlerMap.get(observedElement)
     )
   }
 
@@ -58,7 +63,7 @@ export class SelectorRecorder {
   private _printSelector = (
     element: HTMLElement,
     event: Event,
-    source: Source
+    info: SourceInfo
   ) => {
     const selector: string[] = []
     let el: HTMLElement | null = element
@@ -73,7 +78,8 @@ export class SelectorRecorder {
         // 遇到第一个testId
         if (preCount === -1) {
           selector.unshift(selectorStr)
-          const currentCount = source.querySelectorAll(selectorStr).length
+          const currentCount =
+            info.observedElement.querySelectorAll(selectorStr).length
           console.log("第一次遇到id", selectorStr, currentCount)
           // 如果已经能确定了，则退出
           if (currentCount === 1) {
@@ -82,7 +88,7 @@ export class SelectorRecorder {
           preCount = currentCount
         } else {
           // 加上选择器后的数量
-          const currentCount = source.querySelectorAll(
+          const currentCount = info.observedElement.querySelectorAll(
             `${[selectorStr, ...selector].join(" ")}`
           ).length
           console.log(
@@ -142,7 +148,11 @@ export class SelectorRecorder {
     }
 
     const selectorStr = `${selector.join(" ")}`
-    const { count, idx } = getInfoBySelector(selectorStr, element, source)
+    const { count, idx } = getInfoBySelector(
+      selectorStr,
+      element,
+      info.observedElement
+    )
 
     // 只有在selector字符串有效，并且innerText不包含换行符时（误点击点击最外层的父元素，导致拿了所有子元素的innerText的集合）
     if (
@@ -150,54 +160,25 @@ export class SelectorRecorder {
       !element?.innerText?.includes("\n") &&
       !selectorStr.includes("plasmo-csui")
     ) {
-      this._debounceSetSelectorList(
-        selectorStr,
-        element?.innerText,
-        count,
-        idx,
-        event,
-        source
-      )
-    }
-  }
-
-  private _debounceSetSelectorList = debounce(
-    (
-      selector: string,
-      content: string,
-      count: number,
-      idx: number,
-      event: Event,
-      source: Source
-    ) => {
       this.setSelectorList?.((oldList: TargetNode[]) => [
         ...oldList,
         {
-          selector,
-          content,
+          selector: selectorStr,
+          content: element?.innerText,
           count,
           idx,
-          source
+          event,
+          source_info: info
         }
       ])
       this.preEventTarget = event.target
-    },
-    300
-  )
-
-  async run(observedElement: Source) {
-    const debounceBindTestIdClickEvents = debounce(() => {
-      this._bindTestIdClickEvents(observedElement)
-    }, 500)
-    if (!initializing) {
-      initializing = true
-      start = Date.now()
-      console.log("开始初始化")
     }
+  }
+
+  async run(info: SourceInfo) {
+    this._bindTestIdClickEvents(info)
 
     const fn = (mutations) => {
-      //绑定当前dom事件
-      debounceBindTestIdClickEvents()
       // iframe
       for (const mutation of mutations) {
         if (mutation.type === "childList") {
@@ -212,7 +193,11 @@ export class SelectorRecorder {
                   return observerNode.observedElement === iframeDoc
                 })
                 if (index >= 0) return
-                this.run(iframeDoc)
+                this.run({
+                  observedElement: iframeDoc,
+                  source_type: "iframe",
+                  source_selector: `iframe[src*='${iframe.src}']`
+                })
               }
             }
           }
@@ -220,19 +205,19 @@ export class SelectorRecorder {
       }
     }
     const observer = new MutationObserver(fn)
-    observer.observe(observedElement, {
+    observer.observe(info.observedElement, {
       childList: true,
       subtree: true,
       characterData: false,
       attributes: false
     })
     this.observers.push({
-      observedElement,
+      observedElement: info.observedElement,
       observer
     })
-    this.setSource((oldList) => [...new Set([...oldList, observedElement])])
-
-    console.log("初始化时间：", Date.now() - start)
+    this.setSource((oldList) => [
+      ...new Set([...oldList, info.observedElement])
+    ])
   }
 
   destroy() {

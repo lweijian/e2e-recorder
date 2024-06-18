@@ -46,11 +46,13 @@ export default function useHighLightDom(
 
   const getDom = useCallback(
     function (item: TargetNode) {
-      const { selector, idx, content, source } = item
+      const { selector, idx, content, source_info } = item
       if (removeEmptyStr(selector).length === 0) {
         return undefined
       }
-      let res: Element[] = Array.from(source.querySelectorAll(selector))
+      let res: Element[] = Array.from(
+        source_info.observedElement.querySelectorAll(selector)
+      )
       if (info?.hasIdx) {
         res = [res[idx]]
       }
