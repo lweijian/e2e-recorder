@@ -53,14 +53,15 @@ export default function useHighLightDom(
       let res: Element[] = Array.from(
         source_info.observedElement.querySelectorAll(selector)
       )
-      if (info?.hasIdx) {
-        res = [res[idx]]
-      }
       if (info?.hasText && content) {
         res = res.filter((element) => {
           return (element as unknown as HTMLElement).innerText.includes(content)
         })
       }
+      if (info?.hasIdx) {
+        res = [res[idx]]
+      }
+
       return res
     },
     [info]
