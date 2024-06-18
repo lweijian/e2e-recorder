@@ -8,7 +8,7 @@ import { TEMPLATE } from "./useStore"
 export default function useTemplate() {
   const { state: template } = useStorageValue<string>(
     TEMPLATE,
-    "await page.element({ [text:$text, ]css:$selector }).index($idx).click();"
+    "await page.elements({ [text:$text, ]css:$selector }).index($idx).click();"
   )
 
   const info = useMemo(() => {
