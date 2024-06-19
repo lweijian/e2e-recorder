@@ -15,7 +15,9 @@ export function getInfoBySelector(
   }
   const domList = source.querySelectorAll(selector)
   const idx = Array.from(domList)
-    .filter((dom) => (dom as any)?.innerText?.includes(target.innerText))
+    .filter(
+      (dom) => (dom as any)?.innerText?.includes(target.innerText) ?? true
+    )
     .findIndex((i) => i === target)
   return {
     count: domList.length,
