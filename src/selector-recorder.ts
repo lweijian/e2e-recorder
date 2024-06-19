@@ -54,9 +54,11 @@ export class SelectorRecorder {
     if (!this.handlerMap.has(observedElement)) {
       this.handlerMap.set(observedElement, fn)
     }
+    // 事件捕获，防止有些组件禁用冒泡导致选择器无法正常生成
     observedElement.addEventListener(
       "click",
-      this.handlerMap.get(observedElement)
+      this.handlerMap.get(observedElement),
+      true
     )
   }
 
