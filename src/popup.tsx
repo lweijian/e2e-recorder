@@ -21,7 +21,12 @@ function IndexPopup() {
       <div>
         代码模板
         <div className="text-xs text-gray-500">
-          支持$text,$selector,$idx变量，其中$text为元素的文本，$selector为元素的选择器，$idx为元素在页面中的顺序
+          支持$text,$selector,$idx变量，其中$text为元素的文本，$selector为元素的选择器，$idx为元素在页面中的顺序。
+        </div>
+        <div className="text-xs text-gray-500">
+          {
+            "\n[]内的内容表示可选，如：[text:$text]代表当$text不存在时，不生成这部分代码。"
+          }
         </div>
         <Input.TextArea
           style={{ height: "100px" }}
