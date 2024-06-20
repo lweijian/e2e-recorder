@@ -1,4 +1,4 @@
-import { useMemo } from "react"
+import { useEffect, useMemo } from "react"
 
 import type { TargetNode } from "~/selector-recorder"
 
@@ -6,10 +6,8 @@ import useStorageValue from "./useStorageValue"
 import { TEMPLATE } from "./useStore"
 
 export default function useTemplate() {
-  const { state: template } = useStorageValue<string>(
-    TEMPLATE,
-    "await page.elements({ [text:$text, ]css:$selector }).index($idx).click();"
-  )
+  // todo: 修改initialValue的逻辑
+  const { state: template } = useStorageValue<string>(TEMPLATE)
 
   const info = useMemo(() => {
     return {
