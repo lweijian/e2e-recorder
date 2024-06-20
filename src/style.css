@@ -44,6 +44,7 @@
 
 code {
   white-space: pre-wrap !important;
+  user-select: none;
 }
 
 pre {
