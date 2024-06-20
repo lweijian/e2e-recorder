@@ -28,6 +28,11 @@ function IndexPopup() {
             "\n[]内的内容表示可选，如：[text:$text]代表当$text不存在时，不生成这部分代码。"
           }
         </div>
+        <div className="text-xs text-gray-500">
+          {
+            "\n不妨试试 this.page.elements({ [text:$text, ]css:$selector }).index($idx);"
+          }
+        </div>
         <Input.TextArea
           style={{ height: "100px" }}
           value={state}
