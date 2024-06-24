@@ -1,5 +1,7 @@
 import { Input, Switch } from "@arco-design/web-react"
 
+import { CountButton } from "./features/count-button"
+
 import "~/style.css"
 import "@arco-design/web-react/dist/css/arco.css"
 

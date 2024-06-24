@@ -1,7 +1,4 @@
-import "@arco-design/web-react/es/Message/style/index.css"
-
 import { IconDragDotVertical } from "@arco-design/web-react/icon"
-import globalCss from "data-text:@arco-design/web-react/es/Message/style/index.css"
 import cssText from "data-text:~/style.css"
 import type { PlasmoCSConfig } from "plasmo"
 import { useEffect, useMemo, useState } from "react"
@@ -34,7 +31,7 @@ export const config: PlasmoCSConfig = {
 
 export const getStyle = () => {
   const style = document.createElement("style")
-  style.textContent = globalCss + cssText
+  style.textContent = cssText
   return style
 }
 const RecorderOverlay = () => {
@@ -68,7 +65,7 @@ const RecorderOverlay = () => {
         right: document.body.clientWidth - 50,
         bottom: document.body.clientHeight - 50
       }}>
-      <div className="z-50 flex top-0 left-0 bg-white border rounded-lg p-3 min-w-[600px]  h-[300px] shadow-xl relative ">
+      <div className="z-50 flex top-0 left-0 bg-white border rounded-lg p-3 min-w-[600px] h-[300px] shadow-xl relative ">
         <IconDragDotVertical
           className="w-[15px] h-[15px] mt-[3px]	cursor-move absolute left-3 top-3"
           id="recordedrag-icon"
@@ -89,7 +86,7 @@ const RecorderOverlay = () => {
               : ""
             return (
               <div
-                className="break-all	mb-3 animate__fadeInRight"
+                className="break-all	mb-3 animate__fadeInRight active:scale-105 transition-all"
                 key={idx}
                 onMouseEnter={() => highlightDom(item)}
                 onMouseLeave={() => removeHighLightDom(item)}>

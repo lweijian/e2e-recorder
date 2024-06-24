@@ -1,5 +1,3 @@
-import { Message } from "@arco-design/web-react"
-
 import type { Source } from "~/selector-recorder"
 
 export function getInfoBySelector(
@@ -40,5 +38,4 @@ export function copyText(text: string) {
   input.select()
   document.execCommand("copy")
   document.body.removeChild(input)
-  Message.success("复制成功")
 }
