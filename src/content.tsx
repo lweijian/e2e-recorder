@@ -13,8 +13,7 @@ import SelectorRecorder, {
 
 import useHighLightDom from "./hooks/useHighlightDom"
 import useScrollToBottom from "./hooks/useScrollToBottom"
-import useStorageValue from "./hooks/useStorageValue"
-import useStore, { POSITION, SHOW_CONTENT_UI } from "./hooks/useStore"
+import useStore, { SHOW_CONTENT_UI } from "./hooks/useStore"
 import useTemplate from "./hooks/useTemplate"
 import { copyText } from "./utils"
 
@@ -42,7 +41,6 @@ const RecorderOverlay = () => {
     []
   )
   const [show] = useStore(SHOW_CONTENT_UI)
-  const { state, onChange } = useStorageValue(POSITION)
   useEffect(() => {
     return () => {
       recorder.destroy()
@@ -54,14 +52,30 @@ const RecorderOverlay = () => {
 
   // todo 这里得对iframe处理一下，目前传入document，并不能在iframe页面高亮
   const { highlightDom, removeHighLightDom } = useHighLightDom(info, source)
+
+  const [rect, setRect] = useState({ height: 0, width: 0 })
+  useEffect(() => {
+    // Callback function to execute when mutations are observed
+    const callback = (mutationList) => {
+      for (const mutation of mutationList) {
+        setRect({
+          height: mutation.contentRect.height,
+          width: mutation.contentRect.width
+        })
+      }
+    }
+    const observer = new ResizeObserver(callback)
+    observer.observe(document.body)
+    console.log("observe")
+  }, [])
   return show ? (
     <Draggable
       handle="#recordedrag-icon"
       bounds={{
         left: 0,
         top: 0,
-        right: document.body.clientWidth - 50,
-        bottom: document.body.clientHeight - 50
+        right: rect.width - 50,
+        bottom: rect.height - 50
       }}>
       <div className="z-50 flex top-0 left-0 bg-white border rounded-lg p-3 min-w-[600px] h-[300px] shadow-xl relative ">
         <IconDragDotVertical
