@@ -25,7 +25,7 @@ export default function useStorageValue<T = any>(
     return debounce(setState, 100)
   }, [])
 
-  const onChange = (value: any) => {
+  const onChange = (value: T) => {
     debounceSet(value)
     setInnerState(value)
   }

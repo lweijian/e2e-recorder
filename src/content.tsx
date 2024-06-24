@@ -56,8 +56,6 @@ const RecorderOverlay = () => {
   const { highlightDom, removeHighLightDom } = useHighLightDom(info, source)
   return show ? (
     <Draggable
-      onDrag={(e, { x, y }) => onChange({ x, y })}
-      position={state}
       handle="#recordedrag-icon"
       bounds={{
         left: 0,
