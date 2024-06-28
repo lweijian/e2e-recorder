@@ -231,8 +231,10 @@ export class SelectorRecorder {
         // Unbind the click events.
         observerNode.observedElement.removeEventListener(
           "click",
-          this.handlerMap.get(observerNode.observedElement)
+          this.handlerMap.get(observerNode.observedElement),
+            true
         )
+        this.handlerMap.delete(observerNode.observedElement)
       })
       this.observers = []
     }
