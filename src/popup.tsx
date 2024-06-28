@@ -14,7 +14,7 @@ function IndexPopup() {
   return (
     <div className="flex-col p-5 items-center justify-center w-[500px]">
       <div>
-        展示浮窗 <Switch checked={showContent} onChange={setShowContent} />
+        record <Switch checked={showContent} onChange={setShowContent} />
       </div>
       {/* <div>
         如果无法用data-testId定位，是否用点击元素的类生成选择器{" "}

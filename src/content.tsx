@@ -1,7 +1,7 @@
 import { IconDragDotVertical } from "@arco-design/web-react/icon"
 import cssText from "data-text:~/style.css"
 import type { PlasmoCSConfig } from "plasmo"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import Draggable from "react-draggable"
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter"
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism"
@@ -19,12 +19,7 @@ import { copyText } from "./utils"
 
 export const config: PlasmoCSConfig = {
   matches: [
-    "https://ads.tiktok.com/*",
-    "http://127.0.0.1:8080/*",
-    "http://localhost:8080/*",
-    "https://portal.bitsnaastest.com/*",
-    "https://bitsnaas-dev2.bytedance.net/*",
-    "https://bitsnaas-dev1.bytedance.net/*"
+   "<all_urls>"
   ]
 }
 
@@ -36,14 +31,26 @@ export const getStyle = () => {
 const RecorderOverlay = () => {
   const [recorderList, setRecorderList] = useState<TargetNode[]>([])
   const [source, setSource] = useState<Source[]>([])
-  const recorder = useMemo(
-    () => new SelectorRecorder(setRecorderList, setSource),
-    []
-  )
+  const recorder = useRef<SelectorRecorder>()
   const [show] = useStore(SHOW_CONTENT_UI)
   useEffect(() => {
+    if (!show) {
+      setRecorderList([]);
+      setSource([]);
+      return;
+    }
+
+    recorder.current = new SelectorRecorder(setRecorderList, setSource);
+
     return () => {
-      recorder.destroy()
+      recorder.current?.destroy();
+      recorder.current = undefined;
+    };
+  }, [show]);
+
+  useEffect(() => {
+    return () => {
+      recorder.current?.destroy()
     }
   }, [])
 
