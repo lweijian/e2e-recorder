@@ -18,9 +18,7 @@ import useTemplate from "./hooks/useTemplate"
 import { copyText } from "./utils"
 
 export const config: PlasmoCSConfig = {
-  matches: [
-   "<all_urls>"
-  ]
+  matches: ["<all_urls>"]
 }
 
 export const getStyle = () => {
@@ -35,18 +33,18 @@ const RecorderOverlay = () => {
   const [show] = useStore(SHOW_CONTENT_UI)
   useEffect(() => {
     if (!show) {
-      setRecorderList([]);
-      setSource([]);
-      return;
+      setRecorderList([])
+      setSource([])
+      return
     }
 
-    recorder.current = new SelectorRecorder(setRecorderList, setSource);
+    recorder.current = new SelectorRecorder(setRecorderList, setSource)
 
     return () => {
-      recorder.current?.destroy();
-      recorder.current = undefined;
-    };
-  }, [show]);
+      recorder.current?.destroy()
+      recorder.current = undefined
+    }
+  }, [show])
 
   useEffect(() => {
     return () => {

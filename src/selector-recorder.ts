@@ -176,35 +176,37 @@ export class SelectorRecorder {
       this.preEventTarget = event.target
     }
   }
-
+  private _bindIframeOnload(iframe: HTMLIFrameElement) {
+    iframe.onload = () => {
+      const iframeDoc = iframe.contentDocument || iframe.contentWindow.document
+      const index = this.observers.findIndex((observerNode) => {
+        return observerNode.observedElement === iframeDoc
+      })
+      if (index >= 0) return
+      this.run({
+        observedElement: iframeDoc,
+        source_type: "iframe",
+        source_selector: `iframe[src*='${iframe.src}']`
+      })
+    }
+  }
   async run(info: SourceInfo) {
     this._bindTestIdClickEvents(info)
-
+    // iframe bind event
     const fn = (mutations) => {
-      // iframe
-      for (const mutation of mutations) {
-        if (mutation.type === "childList") {
-          for (const node of mutation.addedNodes) {
-            const iframes: HTMLIFrameElement[] =
-              node?.getElementsByTagName?.("iframe") || []
-            for (const iframe of iframes) {
-              iframe.onload = () => {
-                const iframeDoc =
-                  iframe.contentDocument || iframe.contentWindow.document
-                const index = this.observers.findIndex((observerNode) => {
-                  return observerNode.observedElement === iframeDoc
-                })
-                if (index >= 0) return
-                this.run({
-                  observedElement: iframeDoc,
-                  source_type: "iframe",
-                  source_selector: `iframe[src*='${iframe.src}']`
-                })
-              }
+      mutations.forEach(({ type, addedNodes }) => {
+        if (type === "childList") {
+          addedNodes.forEach((node) => {
+            if (node.nodeName === "IFRAME") {
+              this._bindIframeOnload(node)
+            } else {
+              Array.from(node?.getElementsByTagName?.("iframe") || []).forEach(
+                this._bindIframeOnload
+              )
             }
-          }
+          })
         }
-      }
+      })
     }
     const observer = new MutationObserver(fn)
     observer.observe(info.observedElement, {
@@ -232,7 +234,7 @@ export class SelectorRecorder {
         observerNode.observedElement.removeEventListener(
           "click",
           this.handlerMap.get(observerNode.observedElement),
-            true
+          true
         )
         this.handlerMap.delete(observerNode.observedElement)
       })
