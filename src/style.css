@@ -44,12 +44,12 @@
 
 code {
   white-space: pre-wrap !important;
-  user-select: none;
+  user-select: text;
 }
 
 pre {
   border-radius: 5px;
-  cursor: pointer;
+  cursor: text;
 }
 
 .token {

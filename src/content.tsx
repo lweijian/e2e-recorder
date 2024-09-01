@@ -103,7 +103,7 @@ const RecorderOverlay = () => {
               : ""
             return (
               <div
-                className="break-all	mb-3 animate__fadeInRight active:scale-105 transition-all"
+                className="break-all	mb-3 animate__fadeInRight  transition-all"
                 key={idx}
                 onMouseEnter={() => highlightDom(item)}
                 onMouseLeave={() => removeHighLightDom(item)}>
@@ -111,7 +111,7 @@ const RecorderOverlay = () => {
                   language="javascript"
                   style={vscDarkPlus}
                   onClick={() => {
-                    copyText(code)
+                    // copyText(code)
                   }}>
                   {`${comment}${code}`}
                 </SyntaxHighlighter>
