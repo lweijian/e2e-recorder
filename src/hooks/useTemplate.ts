@@ -7,7 +7,12 @@ import { TEMPLATE } from "./useStore"
 
 export default function useTemplate() {
   // todo: 修改initialValue的逻辑
-  const { state: template } = useStorageValue<string>(TEMPLATE)
+  const { state: template } = useStorageValue<string>(
+    TEMPLATE,
+    `@proprty
+def locator_(self)-> Locator:
+    return self.page.locator([has_text=$text,]selector=$selector).nth($idx)`
+  )
 
   const info = useMemo(() => {
     return {
