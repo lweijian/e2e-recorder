@@ -83,10 +83,16 @@ const RecorderOverlay = () => {
         bottom: rect.height - 50
       }}>
       <div className="z-50 flex top-0 left-0 bg-white border rounded-lg p-3 min-w-[600px] h-[300px] shadow-xl relative ">
-        <IconDragDotVertical
-          className="w-[15px] h-[15px] mt-[3px]	cursor-move absolute left-3 top-3"
-          id="recordedrag-icon"
-        />
+        <div
+          className="w-[10px] h-[15px] mt-[3px] cursor-move absolute left-3 top-3 grid grid-cols-2 grid-rows-3 gap-[0.5px]"
+          id="recordedrag-icon">
+          {/* 创建9个点的网格 */}
+          {[...Array(6)].map((_, i) => (
+            <div
+              key={i}
+              className="w-[3px] h-[3px] bg-gray-500 rounded-full"></div>
+          ))}
+        </div>
         <div
           className="flex-col ml-[7px] px-[20px] w-full h-full overflow-auto overflow-x-hidden p10"
           ref={scrollRef}>
